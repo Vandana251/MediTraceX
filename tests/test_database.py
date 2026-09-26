@@ -62,5 +62,25 @@ class TestDatabaseIntegrity(unittest.TestCase):
         self.assertGreater(watch_count, 0)
         self.assertGreater(notif_count, 0)
 
+    def test_mysql_ssl_and_url_sanitization(self):
+        import database.db_config as dbc
+        orig_db_url = dbc.DATABASE_URL
+        try:
+            # Test URL sanitization on Aiven-style connection string with ssl-mode
+            dbc.DATABASE_URL = "mysql://avnadmin:SecretPass@mysql-aiven.aivencloud.com:12345/defaultdb?ssl-mode=REQUIRED&charset=utf8mb4"
+            cleaned_url, removed = dbc.build_mysql_url()
+            self.assertEqual(cleaned_url.drivername, "mysql+pymysql")
+            self.assertNotIn("ssl-mode", cleaned_url.query)
+            self.assertIn("charset", cleaned_url.query)
+            self.assertIn("ssl-mode", removed)
+
+            # Test SSL connect_args and CA resolution
+            connect_args, ca_src = dbc.get_mysql_connect_args()
+            self.assertIn("ssl", connect_args)
+            self.assertTrue(connect_args["ssl"].check_hostname)
+        finally:
+            dbc.DATABASE_URL = orig_db_url
+
 if __name__ == "__main__":
     unittest.main()
+

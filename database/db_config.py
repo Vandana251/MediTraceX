@@ -66,10 +66,16 @@ def build_mysql_url():
     raw_str = f"mysql+pymysql://{MYSQL_USER}:{safe_password}@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DATABASE}"
     return make_url(raw_str), []
 
-def get_mysql_connect_args() -> dict:
+def get_mysql_connect_args() -> tuple[dict, str]:
     """
     Constructs PyMySQL-compatible SSL connection arguments.
     Enables TLS for remote cloud MySQL providers (e.g. Aiven, AWS RDS, PlanetScale).
+    Resolves CA certificates from:
+      1. MYSQL_SSL_CA / SSL_CA_PATH environment variable (file path)
+      2. Project certs directory (certs/aiven_ca.pem, certs/ca.pem, database/ca.pem)
+      3. Render secret files (/etc/secrets/ca.pem, /etc/secrets/aiven_ca.pem)
+      4. MYSQL_SSL_CA_CONTENT / AIVEN_CA_CERT environment variable (raw PEM text)
+      5. System default trusted CAs (fallback)
     """
     connect_args = {}
     is_remote_host = (
@@ -83,15 +89,45 @@ def get_mysql_connect_args() -> dict:
         if any(term in db_lower for term in ("ssl", "aiven", "rds", "railway", "planetscale")):
             has_ssl_hint = True
 
+    ca_source = "None"
     if is_remote_host or has_ssl_hint or (ENVIRONMENT == "production" and DB_TYPE == "mysql"):
-        try:
-            # Use standard SSLContext which validates trusted public CAs (Aiven, Let's Encrypt, etc.)
-            ssl_context = ssl.create_default_context()
-            connect_args["ssl"] = ssl_context
-        except Exception:
-            connect_args["ssl"] = {"check_hostname": False}
+        ssl_context = ssl.create_default_context()
+        ssl_context.verify_mode = ssl.CERT_REQUIRED
+        ssl_context.check_hostname = True
+        ca_source = "System Default Trust Store"
 
-    return connect_args
+        # Check candidate file paths
+        ca_env_path = os.getenv("MYSQL_SSL_CA", os.getenv("SSL_CA_PATH", "")).strip()
+        ca_content = os.getenv("MYSQL_SSL_CA_CONTENT", os.getenv("AIVEN_CA_CERT", "")).strip()
+
+        candidate_paths = []
+        if ca_env_path:
+            candidate_paths.append(ca_env_path)
+
+        candidate_paths.extend([
+            os.path.join(PROJECT_ROOT, "certs", "aiven_ca.pem"),
+            os.path.join(PROJECT_ROOT, "certs", "ca.pem"),
+            os.path.join(PROJECT_ROOT, "database", "ca.pem"),
+            "/etc/secrets/ca.pem",
+            "/etc/secrets/aiven_ca.pem"
+        ])
+
+        ca_file_found = None
+        for p in candidate_paths:
+            if p and os.path.isfile(p):
+                ca_file_found = p
+                break
+
+        if ca_file_found:
+            ssl_context.load_verify_locations(cafile=ca_file_found)
+            ca_source = f"File ({os.path.basename(ca_file_found)})"
+        elif ca_content:
+            ssl_context.load_verify_locations(cadata=ca_content)
+            ca_source = "Environment Variable (MYSQL_SSL_CA_CONTENT)"
+
+        connect_args["ssl"] = ssl_context
+
+    return connect_args, ca_source
 
 def get_engine() -> Engine:
     """
@@ -101,12 +137,13 @@ def get_engine() -> Engine:
     """
     if DB_TYPE == "mysql" or ENVIRONMENT == "production" or (DATABASE_URL and "mysql" in DATABASE_URL.lower()):
         mysql_url, removed_params = build_mysql_url()
-        mysql_connect_args = get_mysql_connect_args()
+        mysql_connect_args, ca_source = get_mysql_connect_args()
 
         # Safe non-secret diagnostics
         print(f"[Database Config] Initializing MySQL Engine:")
         print(f"  • Driver: {mysql_url.drivername}")
         print(f"  • SSL connect argument configured: {'ssl' in mysql_connect_args}")
+        print(f"  • CA certificate source: {ca_source}")
         if removed_params:
             print(f"  • Removed incompatible URL query parameters: {', '.join(removed_params)}")
         if mysql_url.query:
