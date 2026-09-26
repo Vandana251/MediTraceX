@@ -11,8 +11,9 @@ Supports:
 import sys
 import os
 import ssl
-from urllib.parse import quote_plus, urlparse, parse_qs, urlencode, urlunparse
+from urllib.parse import quote_plus
 from sqlalchemy import create_engine, text
+from sqlalchemy.engine.url import make_url, URL
 from sqlalchemy.orm import sessionmaker, declarative_base
 from sqlalchemy.engine import Engine
 
@@ -34,35 +35,36 @@ MYSQL_DATABASE = os.getenv("MYSQL_DATABASE", "meditracex_db")
 
 Base = declarative_base()
 
-def build_mysql_url() -> str:
+def build_mysql_url():
     """
-    Builds a standardized SQLAlchemy MySQL connection URL.
-    - Converts mysql:// scheme to mysql+pymysql://
-    - Strips driver-incompatible query parameters (ssl-mode, sslmode, ssl_mode)
-    - Preserves all other valid query parameters
+    Builds and sanitizes a SQLAlchemy URL object for MySQL.
+    - Parses DATABASE_URL safely using SQLAlchemy's make_url
+    - Converts drivername to mysql+pymysql
+    - Removes only incompatible query parameters: ssl-mode, sslmode, ssl_mode
+    - Preserves normal parameters such as charset
+    - Returns (url_object, removed_params_list)
     """
     if DATABASE_URL and ("mysql" in DATABASE_URL.lower()):
-        raw_url = DATABASE_URL
-        if raw_url.startswith("mysql://"):
-            raw_url = raw_url.replace("mysql://", "mysql+pymysql://", 1)
-        elif not raw_url.startswith("mysql+pymysql://") and raw_url.startswith("mysql"):
-            raw_url = "mysql+pymysql://" + raw_url.split("://", 1)[-1]
+        url_obj = make_url(DATABASE_URL)
+        if not url_obj.drivername.startswith("mysql+pymysql"):
+            url_obj = url_obj.set(drivername="mysql+pymysql")
 
-        parsed = urlparse(raw_url)
-        if parsed.query:
-            query_params = parse_qs(parsed.query)
-            # Remove ssl-mode / sslmode / ssl_mode which cause PyMySQL TypeError
-            filtered_params = {
-                k: v for k, v in query_params.items()
-                if k.lower() not in ("ssl-mode", "sslmode", "ssl_mode")
-            }
-            new_query = urlencode(filtered_params, doseq=True)
-            return urlunparse(parsed._replace(query=new_query))
-        return raw_url
+        # Safely remove only incompatible SSL query parameters from the URL
+        query_dict = dict(url_obj.query)
+        removed_params = [
+            k for k in list(query_dict.keys())
+            if k.lower() in ("ssl-mode", "sslmode", "ssl_mode")
+        ]
+        for k in removed_params:
+            del query_dict[k]
+
+        cleaned_url = url_obj.set(query=query_dict)
+        return cleaned_url, removed_params
 
     # Fallback to discrete environment variables
     safe_password = quote_plus(MYSQL_PASSWORD) if MYSQL_PASSWORD else ""
-    return f"mysql+pymysql://{MYSQL_USER}:{safe_password}@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DATABASE}"
+    raw_str = f"mysql+pymysql://{MYSQL_USER}:{safe_password}@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DATABASE}"
+    return make_url(raw_str), []
 
 def get_mysql_connect_args() -> dict:
     """
@@ -98,8 +100,18 @@ def get_engine() -> Engine:
     - Development / Testing: SQLite fallback (meditracex.db)
     """
     if DB_TYPE == "mysql" or ENVIRONMENT == "production" or (DATABASE_URL and "mysql" in DATABASE_URL.lower()):
-        mysql_url = build_mysql_url()
+        mysql_url, removed_params = build_mysql_url()
         mysql_connect_args = get_mysql_connect_args()
+
+        # Safe non-secret diagnostics
+        print(f"[Database Config] Initializing MySQL Engine:")
+        print(f"  • Driver: {mysql_url.drivername}")
+        print(f"  • SSL connect argument configured: {'ssl' in mysql_connect_args}")
+        if removed_params:
+            print(f"  • Removed incompatible URL query parameters: {', '.join(removed_params)}")
+        if mysql_url.query:
+            print(f"  • Preserved URL parameters: {', '.join(mysql_url.query.keys())}")
+
         try:
             engine = create_engine(
                 mysql_url,
@@ -112,7 +124,7 @@ def get_engine() -> Engine:
             # Test connectivity if not during cold build/dry run
             with engine.connect() as conn:
                 conn.execute(text("SELECT 1"))
-            print(f"[Database] Successfully connected to MySQL Database ({MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DATABASE})")
+            print(f"[Database] Successfully connected to MySQL Database")
             return engine
         except Exception as e:
             if ENVIRONMENT == "production":
@@ -141,3 +153,4 @@ def get_db():
         yield db
     finally:
         db.close()
+
