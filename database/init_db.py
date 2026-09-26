@@ -26,12 +26,14 @@ from database.models import (
     User, Pharmacy, Medicine, Inventory, SalesHistory,
     MedicineRequest, Watchlist, Notification
 )
-from database.seed_data import seed_database
+from database.seed_data import seed_core_catalog, seed_historical_sales
 
-def init_production_database(auto_seed_if_empty: bool = False):
+def init_production_database(auto_seed_if_empty: bool = True, include_full_history: bool = False):
     """
     Safely verifies connection and creates all missing tables in the target database.
     Does NOT drop existing production tables.
+    If database is completely empty, seeds essential catalog data (< 1 sec) so the
+    web service and endpoints function immediately without blocking cloud port scan.
     """
     print("\n" + "="*78)
     print(" 🛠️  MediTraceX Database Initialization & Schema Verification")
@@ -48,7 +50,7 @@ def init_production_database(auto_seed_if_empty: bool = False):
         print(f"      [ERROR] Could not connect to database: {e}")
         sys.exit(1)
 
-    # 2. Create missing tables
+    # 2. Create missing tables (non-destructive)
     print("[2/3] Verifying and applying relational schema tables...")
     Base.metadata.create_all(bind=engine)
     print("      All 8 core tables are verified and present.")
@@ -61,11 +63,20 @@ def init_production_database(auto_seed_if_empty: bool = False):
         print(f"[3/3] Current Records: {pharmacy_count} Pharmacies | {medicine_count} Medicines")
 
         if pharmacy_count == 0 and auto_seed_if_empty:
-            print("\n      [Notice] Database is empty. Seeding initial Synthetic Demo Dataset...")
-            seed_database()
+            print("\n      [Notice] Empty database detected. Seeding essential catalog & inventory...")
+            seed_core_catalog(session)
+            if include_full_history:
+                print("      [Notice] Seeding optional 240-day sales history simulation...")
+                seed_historical_sales(session)
+            session.commit()
+            print("      [Ready] Essential catalog seeded. Web service ready to serve requests.")
         else:
             print("\n      [Ready] Database initialized and ready for production operation.")
 
+    except Exception as e:
+        session.rollback()
+        print(f"      [ERROR] Initialization failed: {e}")
+        raise
     finally:
         session.close()
 
@@ -73,11 +84,8 @@ def init_production_database(auto_seed_if_empty: bool = False):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Initialize MediTraceX Database")
-    parser.add_argument("--seed", action="store_true", help="Force populate synthetic demonstration data")
+    parser.add_argument("--seed", action="store_true", help="Force populate essential catalog data")
+    parser.add_argument("--full-history", "--seed-all", action="store_true", dest="full_history", help="Also generate 240-day historical sales records for ML simulation")
     args = parser.parse_args()
 
-    if args.seed:
-        print("[Notice] Seeding synthetic demonstration data...")
-        seed_database()
-    else:
-        init_production_database(auto_seed_if_empty=True)
+    init_production_database(auto_seed_if_empty=True, include_full_history=args.full_history)

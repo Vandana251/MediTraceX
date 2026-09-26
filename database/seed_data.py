@@ -21,12 +21,15 @@ from database.models import (
     MedicineRequest, Watchlist, Notification
 )
 
-def create_tables():
+def create_tables(drop_existing: bool = False):
     """Create all tables in the configured database."""
-    print("[1/5] Creating database tables...")
-    Base.metadata.drop_all(bind=engine)
+    if drop_existing:
+        print("[1/5] Dropping and recreating database tables...")
+        Base.metadata.drop_all(bind=engine)
+    else:
+        print("[1/5] Verifying and creating missing database tables...")
     Base.metadata.create_all(bind=engine)
-    print("      Database tables created successfully.")
+    print("      Database tables verified/created successfully.")
 
 # ---------------------------------------------------------------------
 # Fictional Master Data Catalogs
@@ -195,14 +198,28 @@ MEDICINES_DATA = [
 # Seeder Logic
 # ---------------------------------------------------------------------
 
-def seed_database():
-    """Main database seeding routine."""
-    random.seed(42) # Reproducible realistic seed
-    create_tables()
+def seed_core_catalog(session=None, drop_existing: bool = False):
+    """
+    Fast, essential catalog seeding routine (under 1 second).
+    Seeds Pharmacies, Medicines, Users, Inventory across pharmacies,
+    and minimal sample requests/watchlist/notifications.
+    Does NOT seed the heavy 100k+ historical sales simulation.
+    """
+    random.seed(42)
+    owns_session = False
+    if session is None:
+        session = SessionLocal()
+        owns_session = True
 
-    session = SessionLocal()
     try:
-        print("[2/5] Seeding Pharmacies and Medicines catalog...")
+        pharmacy_count = session.query(Pharmacy).count()
+        medicine_count = session.query(Medicine).count()
+
+        if not drop_existing and pharmacy_count > 0 and medicine_count > 0:
+            print(f"      [Skip] Core catalog already populated ({pharmacy_count} Pharmacies | {medicine_count} Medicines).")
+            return
+
+        print("[2/4] Seeding Pharmacies and Medicines catalog...")
         
         # 1. Pharmacies
         pharmacies = []
@@ -248,7 +265,7 @@ def seed_database():
         print(f"      Seeded {len(pharmacies)} Pharmacies and {len(medicines)} Medicines.")
 
         # 3. Users
-        print("[3/5] Seeding System Users & Customer Accounts...")
+        print("[3/4] Seeding System Users & Customer Accounts...")
         users = [
             User(name="Rahul Sharma", email="rahul.sharma@example.com", phone="+91-9876543210", password_hash="hashed_pw_user_1", role="customer", latitude=17.4370, longitude=78.3950),
             User(name="Priya Patel", email="priya.patel@example.com", phone="+91-9876543211", password_hash="hashed_pw_user_2", role="customer", latitude=17.4420, longitude=78.3800),
@@ -262,7 +279,7 @@ def seed_database():
         session.flush()
 
         # 4. Inventory Across All Pharmacies
-        print("[4/5] Generating Realistic Pharmacy Inventory (In Stock, Low Stock, Out of Stock)...")
+        print("[4/4] Generating Pharmacy Inventory (In Stock, Low Stock, Out of Stock)...")
         inventory_records = []
         batch_counter = 1000
 
@@ -279,16 +296,12 @@ def seed_database():
                 safety_threshold = 15
 
                 if roll < 0.13:
-                    # Out of stock
                     qty = 0
                     status = "Out of Stock"
                 elif roll < 0.35:
-                    # Low stock (1 to 14)
                     qty = random.randint(1, safety_threshold - 1)
                     status = "Low Stock"
                 else:
-                    # In stock (16 to 180 units)
-                    # Core medicines have higher stock
                     if "Paracetamol" in med.name or "Pantoprazole" in med.name or "Cetirizine" in med.name:
                         qty = random.randint(45, 220)
                     else:
@@ -312,22 +325,69 @@ def seed_database():
         session.flush()
         print(f"      Seeded {len(inventory_records)} Inventory item records across all pharmacies.")
 
-        # 5. Historical Daily Sales Data (Past 240 days / ~8 months)
-        # We simulate realistic sales curves with day-of-week seasonality, monthly trends & noise
-        print("[5/5] Generating 8 Months (240 Days) of Granular Daily Sales History for ML...")
-        
-        days_history = 240
+        # Sample Requests, Watchlist, Notifications
+        sample_requests = [
+            MedicineRequest(user_id=1, pharmacy_id=1, medicine_id=2, quantity_requested=2, status="FULFILLED", notes="Urgent for fever treatment"),
+            MedicineRequest(user_id=2, pharmacy_id=2, medicine_id=18, quantity_requested=1, status="PENDING", notes="Prescription uploaded for Azithral 500"),
+            MedicineRequest(user_id=3, pharmacy_id=3, medicine_id=82, quantity_requested=1, status="ACCEPTED", notes="Asthalin Inhaler needed"),
+        ]
+        session.add_all(sample_requests)
+
+        sample_watchlist = [
+            Watchlist(user_id=1, medicine_id=82, target_pharmacy_id=1, notify_on_restock=True, is_active=True),
+            Watchlist(user_id=2, medicine_id=18, target_pharmacy_id=2, notify_on_restock=True, is_active=True),
+        ]
+        session.add_all(sample_watchlist)
+
+        sample_notifs = [
+            Notification(user_id=1, title="Stock Restocked Alert", message="Paracetamol 650mg is now back in stock at MediCare Plus!", type="RESTOCK_ALERT", is_read=False),
+            Notification(user_id=5, title="Low Stock Warning", message="Inventory for Dolo 650 reached 8 units (below threshold 15). Reorder recommended.", type="LOW_STOCK_WARNING", is_read=False),
+        ]
+        session.add_all(sample_notifs)
+
+        if owns_session:
+            session.commit()
+            print("\n[SUCCESS] Essential catalog and inventory seeded successfully!")
+
+    except Exception as e:
+        if owns_session:
+            session.rollback()
+        print(f"[ERROR] Essential catalog seeding failed: {e}")
+        raise
+    finally:
+        if owns_session:
+            session.close()
+
+def seed_historical_sales(session=None, days_history: int = 240, batch_size: int = 5000):
+    """
+    Heavy historical sales simulation (Past 240 days / ~8 months).
+    Generates 100,800+ granular time series records for ML training/simulation.
+    Run separately on demand via CLI; never blocks normal web service startup.
+    """
+    random.seed(42)
+    owns_session = False
+    if session is None:
+        session = SessionLocal()
+        owns_session = True
+
+    try:
+        print(f"\n[Optional] Generating {days_history} Days of Granular Daily Sales History for ML simulation...")
+        medicines = session.query(Medicine).all()
+        pharmacies = session.query(Pharmacy).all()
+
+        if not medicines or not pharmacies:
+            print("      [Warning] No medicines or pharmacies found. Seeding core catalog first...")
+            seed_core_catalog(session)
+            medicines = session.query(Medicine).all()
+            pharmacies = session.query(Pharmacy).all()
+
         start_date = date.today() - timedelta(days=days_history)
         sales_records = []
 
-        # Focus sales generation on top 35 popular medicines across key pharmacies for fast & dense time series
         popular_med_ids = [m.id for m in medicines[:35]]
         key_pharm_ids = [p.id for p in pharmacies[:12]]
-        
-        # Mapping base demand per category
         med_dict = {m.id: m for m in medicines}
         
-        batch_size = 5000
         total_sales_count = 0
 
         for day_idx in range(days_history):
@@ -335,17 +395,13 @@ def seed_database():
             day_name = cur_date.strftime("%A")
             is_weekend_val = cur_date.weekday() >= 5
             
-            # Day-of-week factor (Mon, Sat, Sun have higher sales)
             dow_factor = 1.25 if cur_date.weekday() in (0, 5, 6) else 0.95
-            
-            # Seasonal drift (sinusoidal flu/fever peak during monsoon/winter)
             season_factor = 1.0 + 0.3 * math.sin(2 * math.pi * day_idx / 180.0)
 
             for pharm_id in key_pharm_ids:
                 for med_id in popular_med_ids:
                     med = med_dict[med_id]
                     
-                    # Base volume by drug popularity
                     if "Paracetamol 650mg" in med.name or "Dolo 650" in med.name:
                         base = 45.0
                     elif "Paracetamol" in med.name or "Pantoprazole" in med.name:
@@ -358,7 +414,6 @@ def seed_database():
                         base = 10.0
 
                     mean_demand = base * dow_factor * season_factor
-                    # Add Poisson-like Gaussian variance
                     noise = random.gauss(0, max(2.0, mean_demand * 0.15))
                     qty_sold = max(0, int(round(mean_demand + noise)))
 
@@ -387,31 +442,30 @@ def seed_database():
             session.flush()
             sales_records.clear()
 
+        if owns_session:
+            session.commit()
         print(f"      Seeded {total_sales_count} Historical Daily Sales Transactions.")
 
-        # 6. Sample Requests, Watchlist, Notifications
-        sample_requests = [
-            MedicineRequest(user_id=1, pharmacy_id=1, medicine_id=2, quantity_requested=2, status="FULFILLED", notes="Urgent for fever treatment"),
-            MedicineRequest(user_id=2, pharmacy_id=2, medicine_id=18, quantity_requested=1, status="PENDING", notes="Prescription uploaded for Azithral 500"),
-            MedicineRequest(user_id=3, pharmacy_id=3, medicine_id=82, quantity_requested=1, status="ACCEPTED", notes="Asthalin Inhaler needed"),
-        ]
-        session.add_all(sample_requests)
+    except Exception as e:
+        if owns_session:
+            session.rollback()
+        print(f"[ERROR] Historical sales generation failed: {e}")
+        raise
+    finally:
+        if owns_session:
+            session.close()
 
-        sample_watchlist = [
-            Watchlist(user_id=1, medicine_id=82, target_pharmacy_id=1, notify_on_restock=True, is_active=True),
-            Watchlist(user_id=2, medicine_id=18, target_pharmacy_id=2, notify_on_restock=True, is_active=True),
-        ]
-        session.add_all(sample_watchlist)
+def seed_database(include_sales_history: bool = False, drop_existing: bool = False, days_history: int = 240):
+    """Main database seeding routine."""
+    create_tables(drop_existing=drop_existing)
 
-        sample_notifs = [
-            Notification(user_id=1, title="Stock Restocked Alert", message="Paracetamol 650mg is now back in stock at MediCare Plus!", type="RESTOCK_ALERT", is_read=False),
-            Notification(user_id=5, title="Low Stock Warning", message="Inventory for Dolo 650 reached 8 units (below threshold 15). Reorder recommended.", type="LOW_STOCK_WARNING", is_read=False),
-        ]
-        session.add_all(sample_notifs)
-
+    session = SessionLocal()
+    try:
+        seed_core_catalog(session, drop_existing=drop_existing)
+        if include_sales_history:
+            seed_historical_sales(session, days_history=days_history)
         session.commit()
-        print("\n[SUCCESS] MediTraceX Database seeded completely with 100% integrity!")
-
+        print("\n[SUCCESS] MediTraceX Database seeding completed successfully!")
     except Exception as e:
         session.rollback()
         print(f"[ERROR] Database seeding failed: {e}")
@@ -420,4 +474,11 @@ def seed_database():
         session.close()
 
 if __name__ == "__main__":
-    seed_database()
+    import argparse
+    parser = argparse.ArgumentParser(description="MediTraceX Database Seeder")
+    parser.add_argument("--full-history", "--with-sales", action="store_true", dest="full_history", help="Generate full 240-day historical sales records for ML training")
+    parser.add_argument("--reset", "--drop-existing", action="store_true", dest="reset", help="Drop and recreate existing tables before seeding")
+    parser.add_argument("--days", type=int, default=240, help="Days of historical sales simulation (default: 240)")
+    args = parser.parse_args()
+
+    seed_database(include_sales_history=args.full_history, drop_existing=args.reset, days_history=args.days)

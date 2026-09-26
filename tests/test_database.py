@@ -46,9 +46,9 @@ class TestDatabaseIntegrity(unittest.TestCase):
         self.assertGreater(low_stock_cnt, 0)
         self.assertGreater(out_stock_cnt, 0)
 
-    def test_sales_history_depth(self):
+    def test_sales_history_table(self):
         count = self.session.query(SalesHistory).count()
-        self.assertGreaterEqual(count, 10000, "Should have substantial daily sales records for ML")
+        self.assertIsInstance(count, int, "SalesHistory table should be queryable")
 
     def test_users_seeded(self):
         count = self.session.query(User).count()
@@ -61,6 +61,49 @@ class TestDatabaseIntegrity(unittest.TestCase):
         self.assertGreater(req_count, 0)
         self.assertGreater(watch_count, 0)
         self.assertGreater(notif_count, 0)
+
+    def test_empty_db_startup_seeds_core_catalog_only(self):
+        """
+        Validates requirement: On an empty database, init_db / seed_core_catalog
+        must seed the minimum essential catalog (pharmacies, medicines, inventory, users)
+        and NOT generate the 100,800+ historical sales records.
+        """
+        from sqlalchemy import create_engine
+        from sqlalchemy.orm import sessionmaker
+        from database.db_config import Base
+        from database.seed_data import seed_core_catalog, seed_historical_sales
+
+        mem_engine = create_engine("sqlite:///:memory:", echo=False)
+        Base.metadata.create_all(bind=mem_engine)
+        MemSession = sessionmaker(bind=mem_engine)
+        session = MemSession()
+
+        try:
+            # Seed core catalog only
+            seed_core_catalog(session)
+            session.commit()
+
+            pharm_cnt = session.query(Pharmacy).count()
+            med_cnt = session.query(Medicine).count()
+            user_cnt = session.query(User).count()
+            inv_cnt = session.query(Inventory).count()
+            sales_cnt = session.query(SalesHistory).count()
+
+            self.assertGreaterEqual(pharm_cnt, 20)
+            self.assertGreaterEqual(med_cnt, 100)
+            self.assertGreaterEqual(user_cnt, 5)
+            self.assertGreaterEqual(inv_cnt, 2000)
+            # Crucial requirement: No 100,800 sales records on normal startup
+            self.assertEqual(sales_cnt, 0, "Normal startup must not generate heavy sales records")
+
+            # Test explicitly calling historical sales simulation
+            seed_historical_sales(session, days_history=3)
+            session.commit()
+            sales_after = session.query(SalesHistory).count()
+            self.assertGreater(sales_after, 0, "Explicit historical sales simulation should seed records")
+
+        finally:
+            session.close()
 
     def test_mysql_ssl_and_url_sanitization(self):
         import database.db_config as dbc
