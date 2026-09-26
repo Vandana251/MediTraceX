@@ -21,24 +21,24 @@
     "MAE": 2.9336,
     "RMSE": 4.4248,
     "R2": 0.9017,
-    "Training_Time_Sec": 4.74
+    "Training_Time_Sec": 0.75
   },
   "all_model_results": {
     "Random Forest Regressor": {
       "MAE": 3.1459,
       "RMSE": 4.5806,
       "R2": 0.8947,
-      "Training_Time_Sec": 3.68
+      "Training_Time_Sec": 4.08
     },
     "Gradient Boosting Regressor": {
       "MAE": 2.9336,
       "RMSE": 4.4248,
       "R2": 0.9017,
-      "Training_Time_Sec": 4.74
+      "Training_Time_Sec": 0.75
     }
   },
   "selection_rationale": "Gradient Boosting Regressor demonstrated superior predictive accuracy with the lowest RMSE (4.4248) and MAE (2.9336), explaining 90.17% of variance on the chronologically holdout test dataset.",
-  "trained_at": "2026-09-24 12:00:59",
+  "trained_at": "2026-09-26 19:08:53",
   "total_records_trained": 78118,
   "total_records_tested": 19740
 }
