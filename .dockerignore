@@ -1,0 +1,29 @@
+# Git
+.git
+.gitignore
+
+# Python Cache & Environments
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.env
+.venv/
+env/
+venv/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Android Project (Separate Client)
+android/
+
+# Local Dev Database & Logs
+database/meditracex.db
+*.log
+.system_generated/
+
+# IDE
+.idea/
+.vscode/
+*.swp

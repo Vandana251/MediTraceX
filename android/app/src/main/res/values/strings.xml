@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">MediTraceX</string>
+    <string name="app_tagline">Find. Verify. Reach.</string>
+    <string name="app_description">Intelligent Medicine Availability &amp; Pharmacy Discovery Platform</string>
+</resources>
