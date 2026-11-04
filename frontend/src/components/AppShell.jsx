@@ -165,6 +165,30 @@ export function AppShell() {
           <Outlet />
         </main>
       </div>
+
+      {/* Native App-Style Mobile Bottom Navigation Bar */}
+      <nav className="mobile-bottom-nav" aria-label="Mobile Navigation">
+        <NavLink to="/" end className={({ isActive }) => `m-nav-item ${isActive ? 'active' : ''}`}>
+          <LayoutDashboard size={20} />
+          <span>Home</span>
+        </NavLink>
+        <NavLink to="/medicines" className={({ isActive }) => `m-nav-item ${isActive ? 'active' : ''}`}>
+          <Pill size={20} />
+          <span>Medicines</span>
+        </NavLink>
+        <NavLink to="/pharmacies" className={({ isActive }) => `m-nav-item ${isActive ? 'active' : ''}`}>
+          <MapPin size={20} />
+          <span>Pharmacies</span>
+        </NavLink>
+        <NavLink to="/risk" className={({ isActive }) => `m-nav-item ${isActive ? 'active' : ''}`}>
+          <ShieldAlert size={20} />
+          <span>ML Risk</span>
+        </NavLink>
+        <NavLink to={isAuthenticated ? '/profile' : '/login'} className={({ isActive }) => `m-nav-item ${isActive ? 'active' : ''}`}>
+          <UserRound size={20} />
+          <span>{isAuthenticated ? 'Profile' : 'Sign in'}</span>
+        </NavLink>
+      </nav>
     </div>
   )
 }

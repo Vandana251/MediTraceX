@@ -585,6 +585,57 @@ table.data tr:hover td { background: #f8fbfb; }
 
 .mobile-toggle { display: none; }
 
+.mobile-bottom-nav {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .mobile-bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 64px;
+    background: #0a1f22;
+    border-top: 1px solid rgba(45, 212, 191, 0.15);
+    z-index: 100;
+    justify-content: space-around;
+    align-items: center;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(12px);
+  }
+  .m-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    color: #8da4a1;
+    text-decoration: none;
+    font-size: 10.5px;
+    font-weight: 600;
+    flex: 1;
+    height: 100%;
+    transition: all 0.2s ease;
+  }
+  .m-nav-item:hover {
+    color: #dceceb;
+  }
+  .m-nav-item.active {
+    color: #2dd4bf;
+  }
+  .m-nav-item svg {
+    transition: transform 0.2s ease;
+  }
+  .m-nav-item.active svg {
+    transform: scale(1.15);
+  }
+  .workspace main {
+    padding-bottom: 76px;
+  }
+}
+
 @media (max-width: 1100px) {
   .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .insight-strip { grid-template-columns: 1fr; }
