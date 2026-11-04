@@ -35,6 +35,7 @@ async def lifespan(app: FastAPI):
     print(" 🚀 Starting MediTraceX REST API Server...")
     print(f"    • Environment   : {settings.ENVIRONMENT.upper()}")
     print(f"    • Database Type : {settings.DB_TYPE.upper()}")
+    print(f"    • SMTP Email    : {'CONFIGURED' if settings.SMTP_USER else 'DISABLED'}")
     print("    • Initializing in-memory Trie DSA search engine from database...")
     db = SessionLocal()
     try:

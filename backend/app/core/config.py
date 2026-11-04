@@ -4,8 +4,14 @@ Supports environment variable overrides for Cloud & Local deployment.
 """
 
 import os
+from pathlib import Path
 from typing import List
 from pydantic import BaseModel
+from dotenv import load_dotenv
+
+# Load root .env file
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
+load_dotenv(dotenv_path=PROJECT_ROOT / ".env")
 
 class Settings(BaseModel):
     PROJECT_NAME: str = "MediTraceX – Intelligent Medicine Availability & Pharmacy Discovery Platform"
@@ -41,5 +47,13 @@ class Settings(BaseModel):
     # Geospatial Defaults
     DEFAULT_SEARCH_RADIUS_KM: float = 15.0
     MAX_SEARCH_RADIUS_KM: float = 50.0
+
+    # SMTP Mail Server Configuration (Gmail or custom SMTP)
+    SMTP_HOST: str = os.getenv("SMTP_HOST", "smtp.gmail.com")
+    SMTP_PORT: int = int(os.getenv("SMTP_PORT", "587"))
+    SMTP_USER: str = os.getenv("SMTP_USER", "")
+    SMTP_PASSWORD: str = os.getenv("SMTP_PASSWORD", "")
+    SMTP_FROM_NAME: str = os.getenv("SMTP_FROM_NAME", "MediTraceX Healthcare")
+    SMTP_USE_TLS: bool = os.getenv("SMTP_USE_TLS", "true").lower() in ("true", "1", "yes")
 
 settings = Settings()

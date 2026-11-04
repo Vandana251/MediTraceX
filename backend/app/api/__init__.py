@@ -10,6 +10,7 @@ from backend.app.api.inventory import router as inventory_router
 from backend.app.api.predictions import router as predictions_router
 from backend.app.api.requests import router as requests_router
 from backend.app.api.watchlist import router as watchlist_router
+from backend.app.api.locations import router as locations_router
 
 api_router = APIRouter()
 api_router.include_router(auth_router)
@@ -19,3 +20,4 @@ api_router.include_router(inventory_router)
 api_router.include_router(predictions_router)
 api_router.include_router(requests_router)
 api_router.include_router(watchlist_router)
+api_router.include_router(locations_router)

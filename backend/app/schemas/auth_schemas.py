@@ -27,13 +27,16 @@ class UserRegisterRequest(BaseModel):
         return v
 
 class UserLoginRequest(BaseModel):
-    email: str = Field(..., description="Registered email address")
+    email: Optional[str] = Field(default=None, description="Registered email address or phone number")
+    identifier: Optional[str] = Field(default=None, description="Registered email address or phone number")
     password: str = Field(..., description="Account password")
 
-    @field_validator("email")
+    @field_validator("email", "identifier")
     @classmethod
-    def validate_email_format(cls, v: str) -> str:
-        return v.strip().lower()
+    def clean_identifier(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None:
+            return v.strip()
+        return v
 
 class TokenResponse(BaseModel):
     access_token: str
@@ -56,3 +59,21 @@ class UserResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class ForgotPasswordRequest(BaseModel):
+    identifier: str = Field(..., description="Registered email address or phone number")
+
+    @field_validator("identifier")
+    @classmethod
+    def clean_identifier(cls, v: str) -> str:
+        return v.strip()
+
+class ResetPasswordRequest(BaseModel):
+    identifier: str = Field(..., description="Registered email address or phone number")
+    otp: str = Field(..., min_length=4, max_length=10, description="Verification OTP code")
+    new_password: str = Field(..., min_length=6, description="New password (minimum 6 characters)")
+
+    @field_validator("identifier", "otp", "new_password")
+    @classmethod
+    def clean_fields(cls, v: str) -> str:
+        return v.strip()

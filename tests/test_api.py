@@ -78,7 +78,7 @@ class TestMediTraceXAPI(unittest.TestCase):
         res_dup = self.client.post("/api/auth/register", json=register_payload)
         self.assertEqual(res_dup.status_code, 409)
 
-        # C. Login
+        # C. Login via Email
         login_payload = {
             "email": unique_email,
             "password": "SecurePassword123!"
@@ -87,6 +87,26 @@ class TestMediTraceXAPI(unittest.TestCase):
         self.assertEqual(res_login.status_code, 200)
         token = res_login.json()["access_token"]
         self.assertTrue(len(token) > 20)
+
+        # C3. Forgot and Reset Password workflow
+        res_forgot = self.client.post("/api/auth/forgot-password", json={"identifier": unique_phone})
+        self.assertEqual(res_forgot.status_code, 200)
+        otp = res_forgot.json()["demo_otp"]
+
+        res_reset = self.client.post("/api/auth/reset-password", json={
+            "identifier": unique_phone,
+            "otp": otp,
+            "new_password": "NewSecretPassword123!"
+        })
+        self.assertEqual(res_reset.status_code, 200)
+
+        # C4. Verify Login with New Password
+        res_new_login = self.client.post("/api/auth/login", json={
+            "email": unique_email,
+            "password": "NewSecretPassword123!"
+        })
+        self.assertEqual(res_new_login.status_code, 200)
+        token = res_new_login.json()["access_token"]
 
         # D. Protected /me endpoint
         headers = {"Authorization": f"Bearer {token}"}

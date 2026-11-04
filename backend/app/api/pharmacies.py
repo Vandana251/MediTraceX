@@ -8,18 +8,39 @@ from typing import List, Optional, Any
 
 from backend.app.core.database import get_db
 from backend.app.schemas.pharmacy_schemas import NearbyPharmacySearchResponse, RankedPharmacyResponse, PharmacyBase
+from backend.app.schemas.external_pharmacy_schemas import ExternalPharmacyResponse
 from backend.app.services.dsa_service import dsa_service
+from backend.app.services.external_pharmacy_service import external_pharmacy_service
 from backend.app.services.medicine_service import MedicineService
 from backend.app.services.pharmacy_service import PharmacyService
 
 router = APIRouter(prefix="/pharmacies", tags=["Nearby Pharmacy Discovery & DSA Ranking"])
+
+@router.get("/external-nearby", response_model=ExternalPharmacyResponse, summary="Discover real-world nearby pharmacies from connected location data (Overpass API)")
+def get_external_nearby_pharmacies(
+    latitude: float = Query(..., ge=-90.0, le=90.0, description="User current latitude (e.g. 16.4952)"),
+    longitude: float = Query(..., ge=-180.0, le=180.0, description="User current longitude (e.g. 80.6612)"),
+    radius_km: float = Query(default=5.0, ge=0.5, le=100.0, description="Search radius in kilometers"),
+    limit: int = Query(default=25, ge=1, le=50, description="Maximum real-world pharmacies to return"),
+) -> Any:
+    """
+    Discovers real-world independent pharmacies, chemists, and medical supply stores from OpenStreetMap Overpass POI data.
+    Results are deduplicated, calculated via Haversine distance, and ranked nearest first.
+    Note: External pharmacies do not have verified MediTraceX inventory.
+    """
+    return external_pharmacy_service.get_nearby_external_pharmacies(
+        lat=latitude,
+        lon=longitude,
+        radius_km=radius_km,
+        limit=limit
+    )
 
 @router.get("/nearby", response_model=NearbyPharmacySearchResponse, summary="Discover & rank nearby pharmacies for medicine using Min-Heap + Haversine")
 def get_nearby_ranked_pharmacies(
     latitude: float = Query(..., ge=-90.0, le=90.0, description="User current latitude (e.g. 17.4435)"),
     longitude: float = Query(..., ge=-180.0, le=180.0, description="User current longitude (e.g. 78.3780)"),
     medicine_id: int = Query(..., description="Target medicine ID to check availability for"),
-    radius_km: float = Query(default=25.0, ge=0.5, le=100.0, description="Search radius in kilometers"),
+    radius_km: float = Query(default=25.0, ge=0.5, le=5000.0, description="Search radius in kilometers"),
     limit: int = Query(default=10, ge=1, le=50, description="Max ranked pharmacies to return"),
     db: Session = Depends(get_db)
 ) -> Any:
