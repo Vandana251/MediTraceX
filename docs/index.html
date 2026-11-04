@@ -1,79 +1,1728 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <meta name="theme-color" content="#0d9488" />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="MediTraceX" />
-    <meta name="description" content="MediTraceX — Find. Verify. Reach. Intelligent medicine availability and pharmacy discovery." />
-    <link rel="manifest" href="./manifest.json" />
-    <link rel="apple-touch-icon" href="./favicon.svg" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <title>MediTraceX · Find. Verify. Reach.</title>
-    <script type="module" crossorigin src="./assets/index-Ba8jAIkb.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-CchqS51U.css">
-  </head>
-  <body>
-    <div id="root"></div>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediTraceX – Intelligent Medicine Availability & Pharmacy Discovery</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        /* ===== CSS RESET & VARIABLES ===== */
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
-    <!-- PWA Install Prompt for Mobile -->
-    <div id="pwa-install-banner" style="display: none; position: fixed; bottom: 20px; left: 16px; right: 16px; max-width: 440px; margin: 0 auto; background: linear-gradient(135deg, #0f172a, #1e293b); border: 1px solid rgba(45, 212, 191, 0.4); box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 20px rgba(45, 212, 191, 0.2); border-radius: 16px; padding: 16px 20px; z-index: 99999; align-items: center; justify-content: space-between; gap: 12px; color: #f8fafc; font-family: 'Inter', sans-serif;">
-      <div style="display: flex; align-items: center; gap: 12px;">
-        <div style="width: 40px; height: 40px; background: rgba(45, 212, 191, 0.15); border: 1px solid rgba(45, 212, 191, 0.3); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">💊</div>
-        <div>
-          <div style="font-weight: 700; font-size: 0.95rem;">Install MediTraceX App</div>
-          <div style="font-size: 0.78rem; color: #94a3b8;">Use as full app on your phone</div>
-        </div>
-      </div>
-      <div style="display: flex; gap: 8px;">
-        <button id="pwa-install-btn" style="background: linear-gradient(135deg, #0d9488, #0284c7); color: white; border: none; padding: 8px 16px; border-radius: 100px; font-weight: 600; font-size: 0.85rem; cursor: pointer;">Install</button>
-        <button id="pwa-close-btn" style="background: transparent; color: #94a3b8; border: none; font-size: 1.1rem; cursor: pointer; padding: 4px 8px;">✕</button>
-      </div>
+        :root {
+            --bg-primary: #0a0e1a;
+            --bg-secondary: #0f1526;
+            --bg-card: rgba(15, 23, 42, 0.6);
+            --glass: rgba(255, 255, 255, 0.04);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-hover: rgba(255, 255, 255, 0.08);
+            --text-primary: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --accent-teal: #2dd4bf;
+            --accent-blue: #38bdf8;
+            --accent-purple: #a78bfa;
+            --accent-green: #4ade80;
+            --accent-pink: #f472b6;
+            --gradient-primary: linear-gradient(135deg, #0d9488, #0284c7, #7c3aed);
+            --gradient-text: linear-gradient(135deg, #2dd4bf, #38bdf8, #a78bfa);
+            --gradient-card: linear-gradient(135deg, rgba(13, 148, 136, 0.15), rgba(2, 132, 199, 0.10));
+            --shadow-glow: 0 0 60px rgba(45, 212, 191, 0.08);
+            --radius: 16px;
+            --radius-sm: 10px;
+            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.7;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ===== GLOBAL UTILITIES ===== */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        .section {
+            padding: 120px 0;
+            position: relative;
+        }
+
+        .section-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--accent-teal);
+            margin-bottom: 16px;
+            padding: 6px 16px;
+            background: rgba(45, 212, 191, 0.08);
+            border: 1px solid rgba(45, 212, 191, 0.15);
+            border-radius: 100px;
+        }
+
+        .section-title {
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 16px;
+            background: var(--gradient-text);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .section-subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            line-height: 1.8;
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .reveal-delay-1 { transition-delay: 0.1s; }
+        .reveal-delay-2 { transition-delay: 0.2s; }
+        .reveal-delay-3 { transition-delay: 0.3s; }
+        .reveal-delay-4 { transition-delay: 0.4s; }
+        .reveal-delay-5 { transition-delay: 0.5s; }
+        .reveal-delay-6 { transition-delay: 0.6s; }
+
+        /* ===== ANIMATED BACKGROUND MESH ===== */
+        .bg-mesh {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            overflow: hidden;
+        }
+        .bg-mesh::before {
+            content: '';
+            position: absolute;
+            width: 800px; height: 800px;
+            background: radial-gradient(circle, rgba(13, 148, 136, 0.12) 0%, transparent 70%);
+            top: -200px; left: -200px;
+            animation: meshFloat1 20s ease-in-out infinite;
+        }
+        .bg-mesh::after {
+            content: '';
+            position: absolute;
+            width: 600px; height: 600px;
+            background: radial-gradient(circle, rgba(124, 58, 237, 0.10) 0%, transparent 70%);
+            bottom: -100px; right: -100px;
+            animation: meshFloat2 25s ease-in-out infinite;
+        }
+        .bg-orb {
+            position: absolute;
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(2, 132, 199, 0.08) 0%, transparent 70%);
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            animation: meshFloat3 18s ease-in-out infinite;
+        }
+
+        @keyframes meshFloat1 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(100px, 80px) scale(1.1); }
+            66% { transform: translate(-50px, 120px) scale(0.95); }
+        }
+        @keyframes meshFloat2 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(-80px, -60px) scale(1.15); }
+            66% { transform: translate(60px, -100px) scale(0.9); }
+        }
+        @keyframes meshFloat3 {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-40%, -60%) scale(1.2); }
+        }
+
+        /* ===== NAVBAR ===== */
+        .navbar {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 1000;
+            padding: 16px 0;
+            transition: var(--transition);
+            backdrop-filter: blur(0px);
+        }
+        .navbar.scrolled {
+            padding: 10px 0;
+            background: rgba(10, 14, 26, 0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+        }
+        .navbar .container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .nav-logo {
+            font-size: 1.4rem;
+            font-weight: 800;
+            background: var(--gradient-text);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-decoration: none;
+            letter-spacing: -0.5px;
+        }
+        .nav-logo span {
+            -webkit-text-fill-color: var(--accent-teal);
+        }
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 8px;
+        }
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.88rem;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 100px;
+            transition: var(--transition);
+        }
+        .nav-links a:hover {
+            color: var(--text-primary);
+            background: var(--glass);
+        }
+        .nav-cta {
+            background: rgba(45, 212, 191, 0.1) !important;
+            border: 1px solid rgba(45, 212, 191, 0.25) !important;
+            color: var(--accent-teal) !important;
+        }
+        .nav-cta:hover {
+            background: rgba(45, 212, 191, 0.2) !important;
+        }
+
+        .nav-toggle {
+            display: none;
+            flex-direction: column;
+            gap: 5px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+        }
+        .nav-toggle span {
+            width: 24px; height: 2px;
+            background: var(--text-primary);
+            border-radius: 2px;
+            transition: var(--transition);
+        }
+
+        /* ===== HERO SECTION ===== */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            position: relative;
+            padding-top: 80px;
+            overflow: hidden;
+        }
+
+        .hero-grid {
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(45, 212, 191, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(45, 212, 191, 0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            mask-image: radial-gradient(ellipse at center, black 20%, transparent 70%);
+            -webkit-mask-image: radial-gradient(ellipse at center, black 20%, transparent 70%);
+        }
+
+        .hero-content {
+            text-align: center;
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 20px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 100px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+            animation: fadeInUp 0.8s ease both;
+        }
+        .hero-badge .dot {
+            width: 8px; height: 8px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.4); }
+            50% { opacity: 0.8; box-shadow: 0 0 0 8px rgba(74, 222, 128, 0); }
+        }
+
+        .hero-title {
+            font-size: clamp(3rem, 8vw, 6rem);
+            font-weight: 900;
+            line-height: 1.05;
+            letter-spacing: -2px;
+            margin-bottom: 8px;
+            animation: fadeInUp 0.8s ease 0.1s both;
+        }
+        .hero-title .gradient {
+            background: var(--gradient-text);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .hero-title .x-mark {
+            -webkit-text-fill-color: var(--accent-teal);
+            position: relative;
+        }
+
+        .hero-tagline {
+            font-size: clamp(1.2rem, 2.5vw, 1.6rem);
+            font-weight: 300;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            animation: fadeInUp 0.8s ease 0.2s both;
+        }
+
+        .hero-description {
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            max-width: 650px;
+            margin: 0 auto 40px;
+            line-height: 1.8;
+            animation: fadeInUp 0.8s ease 0.3s both;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+            animation: fadeInUp 0.8s ease 0.4s both;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 32px;
+            border-radius: 100px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: var(--transition);
+            cursor: pointer;
+            border: none;
+            font-family: inherit;
+        }
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+            box-shadow: 0 4px 30px rgba(13, 148, 136, 0.3);
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 40px rgba(13, 148, 136, 0.4);
+        }
+        .btn-secondary {
+            background: var(--glass);
+            color: var(--text-primary);
+            border: 1px solid var(--glass-border);
+        }
+        .btn-secondary:hover {
+            background: var(--glass-hover);
+            border-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .hero-stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 48px;
+            margin-top: 64px;
+            padding-top: 40px;
+            border-top: 1px solid var(--glass-border);
+            animation: fadeInUp 0.8s ease 0.5s both;
+        }
+        .hero-stat {
+            text-align: center;
+        }
+        .hero-stat-value {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--accent-teal);
+        }
+        .hero-stat-label {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 4px;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ===== ABOUT SECTION ===== */
+        #about { background: transparent; }
+
+        .about-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: center;
+        }
+        .about-text h3 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+        }
+        .about-text p {
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            line-height: 1.8;
+        }
+
+        .about-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        .about-card {
+            padding: 24px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            transition: var(--transition);
+        }
+        .about-card:hover {
+            background: var(--glass-hover);
+            border-color: rgba(45, 212, 191, 0.2);
+            transform: translateY(-4px);
+        }
+        .about-card .icon {
+            font-size: 1.8rem;
+            margin-bottom: 12px;
+            display: block;
+        }
+        .about-card h4 {
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: var(--text-primary);
+        }
+        .about-card p {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        /* ===== ARCHITECTURE SECTION ===== */
+        #architecture {
+            background: linear-gradient(180deg, transparent, rgba(13, 148, 136, 0.03), transparent);
+        }
+
+        .arch-container {
+            max-width: 900px;
+            margin: 48px auto 0;
+        }
+
+        .arch-diagram {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0;
+        }
+
+        .arch-layer {
+            position: relative;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
+        .arch-box {
+            padding: 24px 40px;
+            border-radius: var(--radius);
+            text-align: center;
+            position: relative;
+            transition: var(--transition);
+            max-width: 520px;
+            width: 100%;
+        }
+        .arch-box:hover {
+            transform: scale(1.03);
+        }
+
+        .arch-box-title {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .arch-box-sub {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+
+        .arch-client {
+            background: linear-gradient(135deg, rgba(167, 139, 250, 0.12), rgba(167, 139, 250, 0.04));
+            border: 1px solid rgba(167, 139, 250, 0.2);
+        }
+        .arch-client .arch-box-title { color: var(--accent-purple); }
+
+        .arch-web {
+            background: linear-gradient(135deg, rgba(244, 114, 182, 0.12), rgba(244, 114, 182, 0.04));
+            border: 1px solid rgba(244, 114, 182, 0.2);
+        }
+        .arch-web .arch-box-title { color: var(--accent-pink); }
+
+        .arch-backend {
+            background: linear-gradient(135deg, rgba(45, 212, 191, 0.12), rgba(45, 212, 191, 0.04));
+            border: 1px solid rgba(45, 212, 191, 0.2);
+            max-width: 600px;
+            padding: 28px 40px;
+        }
+        .arch-backend .arch-box-title { color: var(--accent-teal); }
+
+        .arch-db {
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.12), rgba(56, 189, 248, 0.04));
+            border: 1px solid rgba(56, 189, 248, 0.2);
+        }
+        .arch-db .arch-box-title { color: var(--accent-blue); }
+
+        .arch-sub-modules {
+            display: flex;
+            gap: 12px;
+            margin-top: 14px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .arch-sub-module {
+            padding: 8px 16px;
+            background: rgba(45, 212, 191, 0.06);
+            border: 1px solid rgba(45, 212, 191, 0.12);
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .arch-connector {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 8px 0;
+            color: var(--text-muted);
+        }
+        .arch-connector-line {
+            width: 2px;
+            height: 24px;
+            background: linear-gradient(to bottom, rgba(45, 212, 191, 0.3), rgba(56, 189, 248, 0.3));
+            border-radius: 2px;
+        }
+        .arch-connector-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            padding: 4px 12px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 100px;
+            margin: 4px 0;
+        }
+        .arch-connector-arrow {
+            font-size: 1rem;
+            color: var(--accent-teal);
+        }
+
+        .arch-clients-row {
+            display: flex;
+            gap: 24px;
+            justify-content: center;
+            width: 100%;
+        }
+        .arch-clients-row .arch-box {
+            flex: 1;
+            max-width: 280px;
+        }
+
+        /* ===== FEATURES SECTION ===== */
+        #features { background: transparent; }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 48px;
+        }
+
+        .feature-card {
+            padding: 32px 28px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: var(--gradient-primary);
+            opacity: 0;
+            transition: var(--transition);
+        }
+        .feature-card:hover {
+            background: var(--glass-hover);
+            border-color: rgba(45, 212, 191, 0.15);
+            transform: translateY(-6px);
+            box-shadow: var(--shadow-glow);
+        }
+        .feature-card:hover::before {
+            opacity: 1;
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 16px;
+            display: block;
+        }
+        .feature-card h3 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+        .feature-card p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.7;
+        }
+        .feature-tag {
+            display: inline-block;
+            margin-top: 14px;
+            padding: 4px 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            border-radius: 100px;
+            letter-spacing: 0.5px;
+        }
+        .tag-dsa {
+            background: rgba(167, 139, 250, 0.1);
+            color: var(--accent-purple);
+            border: 1px solid rgba(167, 139, 250, 0.2);
+        }
+        .tag-ml {
+            background: rgba(74, 222, 128, 0.1);
+            color: var(--accent-green);
+            border: 1px solid rgba(74, 222, 128, 0.2);
+        }
+        .tag-api {
+            background: rgba(56, 189, 248, 0.1);
+            color: var(--accent-blue);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+        }
+        .tag-ui {
+            background: rgba(244, 114, 182, 0.1);
+            color: var(--accent-pink);
+            border: 1px solid rgba(244, 114, 182, 0.2);
+        }
+        .tag-devops {
+            background: rgba(45, 212, 191, 0.1);
+            color: var(--accent-teal);
+            border: 1px solid rgba(45, 212, 191, 0.2);
+        }
+
+        /* ===== TECH STACK SECTION ===== */
+        #techstack {
+            background: linear-gradient(180deg, transparent, rgba(124, 58, 237, 0.03), transparent);
+        }
+
+        .tech-categories {
+            display: flex;
+            flex-direction: column;
+            gap: 36px;
+            margin-top: 48px;
+        }
+        .tech-category {
+            display: flex;
+            align-items: flex-start;
+            gap: 24px;
+        }
+        .tech-category-label {
+            min-width: 120px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            padding-top: 12px;
+        }
+        .tech-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .tech-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 100px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: var(--transition);
+            white-space: nowrap;
+        }
+        .tech-pill:hover {
+            background: var(--glass-hover);
+            border-color: rgba(45, 212, 191, 0.2);
+            color: var(--text-primary);
+            transform: translateY(-2px);
+        }
+        .tech-pill .tech-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+        }
+        .dot-python { background: #3776AB; }
+        .dot-fastapi { background: #009688; }
+        .dot-mysql { background: #4479A1; }
+        .dot-sqlite { background: #003B57; }
+        .dot-sklearn { background: #F7931E; }
+        .dot-react { background: #61DAFB; }
+        .dot-vite { background: #646CFF; }
+        .dot-tailwind { background: #06B6D4; }
+        .dot-kotlin { background: #7F52FF; }
+        .dot-compose { background: #4285F4; }
+        .dot-docker { background: #2496ED; }
+        .dot-jwt { background: #D63AFF; }
+        .dot-pydantic { background: #E92063; }
+        .dot-pandas { background: #150458; }
+        .dot-recharts { background: #FF6B6B; }
+        .dot-retrofit { background: #48B983; }
+        .dot-sqlalchemy { background: #CC2927; }
+        .dot-uvicorn { background: #2ECC71; }
+        .dot-numpy { background: #013243; }
+
+        /* ===== STATS SECTION ===== */
+        #stats { background: transparent; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-top: 48px;
+        }
+        .stat-card {
+            padding: 36px 24px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            text-align: center;
+            transition: var(--transition);
+        }
+        .stat-card:hover {
+            background: var(--glass-hover);
+            border-color: rgba(45, 212, 191, 0.15);
+            transform: translateY(-4px);
+        }
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 900;
+            background: var(--gradient-text);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+        .stat-suffix {
+            font-size: 1.5rem;
+        }
+        .stat-label {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* ===== SCREENSHOTS SECTION ===== */
+        #screenshots {
+            background: linear-gradient(180deg, transparent, rgba(13, 148, 136, 0.03), transparent);
+        }
+
+        .screenshots-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-top: 48px;
+        }
+        .screenshot-card {
+            aspect-ratio: 16 / 10;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            transition: var(--transition);
+            overflow: hidden;
+            position: relative;
+        }
+        .screenshot-card:hover {
+            border-color: rgba(45, 212, 191, 0.2);
+            transform: translateY(-4px);
+        }
+        .screenshot-card .placeholder-icon {
+            font-size: 2.5rem;
+            opacity: 0.3;
+        }
+        .screenshot-card .placeholder-text {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+        .screenshot-card .placeholder-sub {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            opacity: 0.5;
+        }
+        .screenshot-card .shimmer {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                110deg,
+                transparent 25%,
+                rgba(45, 212, 191, 0.03) 50%,
+                transparent 75%
+            );
+            animation: shimmer 3s ease-in-out infinite;
+        }
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* ===== FOOTER ===== */
+        .footer {
+            padding: 60px 0 40px;
+            border-top: 1px solid var(--glass-border);
+            background: rgba(10, 14, 26, 0.5);
+        }
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 40px;
+            flex-wrap: wrap;
+        }
+        .footer-brand {
+            max-width: 360px;
+        }
+        .footer-brand h3 {
+            font-size: 1.4rem;
+            font-weight: 800;
+            background: var(--gradient-text);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 12px;
+        }
+        .footer-brand p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            line-height: 1.7;
+        }
+        .footer-links {
+            display: flex;
+            gap: 48px;
+        }
+        .footer-col h4 {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 16px;
+        }
+        .footer-col a {
+            display: block;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.88rem;
+            padding: 4px 0;
+            transition: var(--transition);
+        }
+        .footer-col a:hover {
+            color: var(--accent-teal);
+        }
+        .footer-bottom {
+            margin-top: 48px;
+            padding-top: 24px;
+            border-top: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+        .footer-bottom p {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+        }
+        .footer-socials {
+            display: flex;
+            gap: 12px;
+        }
+        .footer-socials a {
+            width: 40px; height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 50%;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 1.1rem;
+            transition: var(--transition);
+        }
+        .footer-socials a:hover {
+            background: rgba(45, 212, 191, 0.1);
+            border-color: rgba(45, 212, 191, 0.25);
+            color: var(--accent-teal);
+            transform: translateY(-2px);
+        }
+
+        /* ===== SCROLL PROGRESS BAR ===== */
+        .scroll-progress {
+            position: fixed;
+            top: 0; left: 0;
+            height: 3px;
+            background: var(--gradient-primary);
+            z-index: 1001;
+            transition: width 0.1s linear;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 1024px) {
+            .features-grid { grid-template-columns: repeat(2, 1fr); }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .screenshots-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 768px) {
+            .section { padding: 80px 0; }
+
+            .nav-links { display: none; }
+            .nav-toggle { display: flex; }
+
+            .nav-links.mobile-open {
+                display: flex;
+                flex-direction: column;
+                position: absolute;
+                top: 100%;
+                left: 16px;
+                right: 16px;
+                background: rgba(15, 21, 38, 0.95);
+                backdrop-filter: blur(20px);
+                border: 1px solid var(--glass-border);
+                border-radius: var(--radius);
+                padding: 16px;
+                gap: 4px;
+            }
+            .nav-links.mobile-open a {
+                padding: 12px 16px;
+                border-radius: var(--radius-sm);
+            }
+
+            .hero-title { letter-spacing: -1px; }
+            .hero-stats-bar { gap: 24px; flex-wrap: wrap; }
+
+            .about-grid {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+
+            .arch-clients-row {
+                flex-direction: column;
+                align-items: center;
+            }
+            .arch-clients-row .arch-box {
+                max-width: 100%;
+            }
+
+            .features-grid { grid-template-columns: 1fr; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .screenshots-grid { grid-template-columns: 1fr; }
+
+            .tech-category {
+                flex-direction: column;
+                gap: 12px;
+            }
+            .tech-category-label { min-width: auto; }
+
+            .footer-content { flex-direction: column; }
+            .footer-links { gap: 32px; }
+        }
+
+        @media (max-width: 480px) {
+            .hero-tagline { letter-spacing: 3px; font-size: 1rem; }
+            .hero-buttons { flex-direction: column; align-items: center; }
+            .btn { width: 100%; justify-content: center; max-width: 280px; }
+            .stats-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+            .stat-card { padding: 24px 16px; }
+            .stat-number { font-size: 2.2rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Scroll Progress -->
+<div class="scroll-progress" id="scrollProgress"></div>
+
+<!-- Animated Background -->
+<div class="bg-mesh">
+    <div class="bg-orb"></div>
+</div>
+
+<!-- Navbar -->
+<nav class="navbar" id="navbar">
+    <div class="container">
+        <a href="#" class="nav-logo">Medi<span>TraceX</span></a>
+        <ul class="nav-links" id="navLinks">
+            <li><a href="#about">About</a></li>
+            <li><a href="#demo">Live Demo</a></li>
+            <li><a href="#architecture">Architecture</a></li>
+            <li><a href="#features">Features</a></li>
+            <li><a href="#techstack">Tech Stack</a></li>
+            <li><a href="#stats">Metrics</a></li>
+            <li><a href="./app/" class="nav-cta" style="background: linear-gradient(135deg, #0d9488, #0284c7) !important; color: white !important; font-weight: 700;">🚀 Open Web App</a></li>
+            <li><a href="https://github.com/Vandana251/MediTraceX" target="_blank" class="nav-cta">⭐ GitHub</a></li>
+        </ul>
+        <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
+            <span></span><span></span><span></span>
+        </button>
     </div>
+</nav>
 
-    <script>
-      // Register Service Worker
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('./sw.js').catch(() => {});
+<!-- Hero Section -->
+<section class="hero" id="hero">
+    <div class="hero-grid"></div>
+    <div class="container">
+        <div class="hero-content">
+            <div class="hero-badge">
+                <span class="dot"></span>
+                Healthcare Technology Platform • Live App &amp; API Ready
+            </div>
+            <h1 class="hero-title">
+                <span class="gradient">MediTrace</span><span class="x-mark">X</span>
+            </h1>
+            <p class="hero-tagline">Find · Verify · Reach</p>
+            <p class="hero-description">
+                Intelligent medicine availability &amp; pharmacy discovery platform — powered by advanced DSA algorithms, machine learning, and real-time geospatial search. Usable right now on mobile and desktop!
+            </p>
+            <div class="hero-buttons">
+                <a href="./app/" class="btn btn-primary" style="font-size: 1.05rem; padding: 16px 36px; box-shadow: 0 0 25px rgba(45, 212, 191, 0.4);">
+                    🚀 Launch Full Web App
+                </a>
+                <a href="#demo" class="btn btn-secondary">
+                    ⚡ Try Live Medicine Search
+                </a>
+                <a href="https://github.com/Vandana251/MediTraceX" target="_blank" class="btn btn-secondary">
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                    GitHub Code
+                </a>
+            </div>
+            <div class="hero-stats-bar">
+                <div class="hero-stat">
+                    <div class="hero-stat-value">20+</div>
+                    <div class="hero-stat-label">API Endpoints</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-value">3</div>
+                    <div class="hero-stat-label">DSA Algorithms</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-value">12+</div>
+                    <div class="hero-stat-label">React Pages</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-value">Full</div>
+                    <div class="hero-stat-label">Stack Platform</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Interactive Live Demo Section -->
+<section class="section" id="demo" style="background: linear-gradient(180deg, rgba(13, 148, 136, 0.05) 0%, transparent 100%);">
+    <div class="container">
+        <div style="text-align:center;" class="reveal">
+            <span class="section-label">⚡ Live Interactive Experience</span>
+            <h2 class="section-title">Test MediTraceX in Real Time</h2>
+            <p class="section-subtitle" style="margin:0 auto 32px;">
+                Directly interact with our live production backend! Type any medicine name or try the sample queries below.
+            </p>
+        </div>
+
+        <div class="reveal reveal-delay-2" style="max-width: 820px; margin: 0 auto; background: var(--bg-card); border: 1px solid var(--glass-border); border-radius: var(--radius); padding: 32px 24px; box-shadow: var(--shadow-glow);">
+            <div style="display: flex; gap: 12px; margin-bottom: 20px;">
+                <input type="text" id="demoSearchInput" placeholder="🔍 Search medicine (e.g., Dolo, Paracetamol, Azithromycin)..." 
+                       style="flex: 1; padding: 14px 20px; background: rgba(15, 23, 42, 0.8); border: 1px solid var(--glass-border); border-radius: 100px; color: var(--text-primary); font-size: 1rem; outline: none; font-family: inherit; transition: var(--transition);"
+                       onfocus="this.style.borderColor='var(--accent-teal)'" onblur="this.style.borderColor='var(--glass-border)'">
+                <button id="demoSearchBtn" class="btn btn-primary" style="padding: 14px 28px; white-space: nowrap;">
+                    Search
+                </button>
+            </div>
+
+            <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 24px;">
+                <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">QUICK TRY:</span>
+                <button class="quick-pill" onclick="runDemoSearch('Dolo')">Dolo 650</button>
+                <button class="quick-pill" onclick="runDemoSearch('Paracetamol')">Paracetamol</button>
+                <button class="quick-pill" onclick="runDemoSearch('Azithromycin')">Azithromycin</button>
+                <button class="quick-pill" onclick="runDemoSearch('Metformin')">Metformin</button>
+                <button class="quick-pill" onclick="runDemoSearch('Amoxicillin')">Amoxicillin</button>
+            </div>
+
+            <!-- Results Box -->
+            <div id="demoResultsContainer">
+                <div style="text-align: center; padding: 28px 16px; color: var(--text-muted); font-size: 0.9rem;">
+                    💡 Type a medicine name above or click one of the quick suggestions to see instant DSA Trie matching &amp; availability!
+                </div>
+            </div>
+
+            <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--glass-border); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: var(--accent-green);">
+                    <span style="width: 8px; height: 8px; background: var(--accent-green); border-radius: 50%; display: inline-block;"></span>
+                    Backend Status: <strong>LIVE &amp; CONNECTED</strong> (Render Cloud API)
+                </div>
+                <a href="./app/" class="btn btn-primary" style="padding: 10px 24px; font-size: 0.85rem;">
+                    Open Full App Experience →
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+.quick-pill {
+    padding: 6px 14px;
+    background: rgba(45, 212, 191, 0.08);
+    border: 1px solid rgba(45, 212, 191, 0.2);
+    border-radius: 100px;
+    color: var(--accent-teal);
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+}
+.quick-pill:hover {
+    background: rgba(45, 212, 191, 0.2);
+    transform: translateY(-2px);
+}
+.demo-card {
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-sm);
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: var(--transition);
+}
+.demo-card:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(45, 212, 191, 0.25);
+    transform: translateY(-2px);
+}
+</style>
+
+<script>
+const BACKEND_URL = 'https://meditracex-backend.onrender.com';
+
+async function runDemoSearch(term) {
+    const input = document.getElementById('demoSearchInput');
+    if (term) input.value = term;
+    const query = (input.value || '').trim();
+    if (!query) return;
+
+    const container = document.getElementById('demoResultsContainer');
+    container.innerHTML = '<div style="text-align: center; padding: 24px; color: var(--accent-teal);">⚡ Querying DSA Trie Engine...</div>';
+
+    try {
+        const t0 = performance.now();
+        const res = await fetch(`${BACKEND_URL}/api/medicines/search?q=${encodeURIComponent(query)}&limit=6`);
+        const data = await res.json();
+        const duration = Math.round(performance.now() - t0);
+
+        if (!data || data.length === 0) {
+            container.innerHTML = `
+                <div style="text-align: center; padding: 24px; color: var(--text-muted);">
+                    No medicines found matching "<strong>${query}</strong>". Try another keyword like "Paracetamol" or "Dolo".
+                </div>
+            `;
+            return;
+        }
+
+        let html = `
+            <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px;">
+                <span>Found ${data.length} match(es) in ${duration}ms</span>
+                <span style="color: var(--accent-teal);">DSA Trie Matching</span>
+            </div>
+        `;
+
+        data.forEach(item => {
+            const price = item.unit_price ? `₹${item.unit_price}` : 'Price on request';
+            const brand = item.brand_name ? `(${item.brand_name})` : '';
+            html += `
+                <div class="demo-card">
+                    <div>
+                        <div style="font-weight: 700; color: var(--text-primary); font-size: 1rem;">
+                            ${item.name || item.generic_name} <span style="font-weight: 400; color: var(--accent-blue); font-size: 0.85rem;">${brand}</span>
+                        </div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">
+                            ${item.category || 'General'} · ${item.dosage_form || 'Medicine'} · ${item.manufacturer || 'Approved'}
+                        </div>
+                    </div>
+                    <div style="text-align: right; min-width: 110px;">
+                        <div style="font-size: 1rem; font-weight: 800; color: var(--accent-teal);">${price}</div>
+                        <a href="./app/#/medicines/${item.id}" class="quick-pill" style="display: inline-block; margin-top: 4px; text-decoration: none;">
+                            View in App →
+                        </a>
+                    </div>
+                </div>
+            `;
         });
-      }
 
-      // Handle Install Prompt
-      let deferredPrompt = null;
-      const banner = document.getElementById('pwa-install-banner');
-      const installBtn = document.getElementById('pwa-install-btn');
-      const closeBtn = document.getElementById('pwa-close-btn');
+        container.innerHTML = html;
+    } catch (err) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 20px; color: #f87171;">
+                Could not reach live API: ${err.message}. Please click 'Open Web App' directly.
+            </div>
+        `;
+    }
+}
 
-      window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        if (banner) banner.style.display = 'flex';
-      });
-
-      if (installBtn) {
-        installBtn.addEventListener('click', async () => {
-          if (deferredPrompt) {
-            deferredPrompt.prompt();
-            const { outcome } = await deferredPrompt.userChoice;
-            deferredPrompt = null;
-            if (banner) banner.style.display = 'none';
-          }
+document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.getElementById('demoSearchBtn');
+    const input = document.getElementById('demoSearchInput');
+    if (btn) btn.addEventListener('click', () => runDemoSearch());
+    if (input) {
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') runDemoSearch();
         });
-      }
+    }
+});
+</script>
 
-      if (closeBtn) {
-        closeBtn.addEventListener('click', () => {
-          if (banner) banner.style.display = 'none';
+<!-- About Section -->
+<section class="section" id="about">
+    <div class="container">
+        <div class="about-grid">
+            <div class="about-text reveal">
+                <span class="section-label">✦ About the Project</span>
+                <h2 class="section-title">Solving Emergency Medicine Stockouts</h2>
+                <p>
+                    MediTraceX is a full-stack healthcare technology platform built to solve the critical challenge of emergency medicine stockouts and pharmaceutical access barriers.
+                </p>
+                <p>
+                    The platform combines real-time medicine search with GPS-based pharmacy discovery, AI-powered demand forecasting, and stock-out risk classification — enabling patients, pharmacists, and administrators to find, verify, and reach essential medicines faster.
+                </p>
+                <p>
+                    Built with a 3-tier role-based access system (Patient → Pharmacist → Admin), MediTraceX delivers a comprehensive ecosystem spanning a React web dashboard, an Android native app, and a robust FastAPI backend.
+                </p>
+            </div>
+            <div class="about-cards reveal reveal-delay-2">
+                <div class="about-card">
+                    <span class="icon">🔍</span>
+                    <h4>Smart Search</h4>
+                    <p>Trie prefix matching with Levenshtein fuzzy correction for medicine names</p>
+                </div>
+                <div class="about-card">
+                    <span class="icon">📍</span>
+                    <h4>GPS Discovery</h4>
+                    <p>Haversine-powered proximity ranking to find nearest pharmacies</p>
+                </div>
+                <div class="about-card">
+                    <span class="icon">🤖</span>
+                    <h4>AI Forecasting</h4>
+                    <p>7-day rolling demand prediction with automated replenishment alerts</p>
+                </div>
+                <div class="about-card">
+                    <span class="icon">🛡️</span>
+                    <h4>Risk Classification</h4>
+                    <p>Real-time stock-out risk scoring: HIGH, MEDIUM, or LOW levels</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Architecture Section -->
+<section class="section" id="architecture">
+    <div class="container">
+        <div style="text-align:center;" class="reveal">
+            <span class="section-label">◈ System Design</span>
+            <h2 class="section-title">Platform Architecture</h2>
+            <p class="section-subtitle" style="margin:0 auto;">Multi-tier architecture with native Android, React web, and a FastAPI intelligent backend.</p>
+        </div>
+
+        <div class="arch-container reveal reveal-delay-2">
+            <div class="arch-diagram">
+                <!-- Client Layer -->
+                <div class="arch-layer">
+                    <div class="arch-clients-row">
+                        <div class="arch-box arch-client">
+                            <div class="arch-box-title">📱 Android App</div>
+                            <div class="arch-box-sub">Kotlin · Jetpack Compose · Material 3 · MVVM</div>
+                        </div>
+                        <div class="arch-box arch-web">
+                            <div class="arch-box-title">🌐 React Web App</div>
+                            <div class="arch-box-sub">React 19 · Vite · Tailwind CSS · Recharts</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Connector -->
+                <div class="arch-connector">
+                    <div class="arch-connector-line"></div>
+                    <span class="arch-connector-label">HTTPS / REST</span>
+                    <div class="arch-connector-arrow">▼</div>
+                </div>
+
+                <!-- Backend Layer -->
+                <div class="arch-layer">
+                    <div class="arch-box arch-backend">
+                        <div class="arch-box-title">⚡ FastAPI Backend</div>
+                        <div class="arch-box-sub">Python 3.11 · Uvicorn · 20+ Endpoints · JWT Auth</div>
+                        <div class="arch-sub-modules">
+                            <span class="arch-sub-module">🔤 Trie Search</span>
+                            <span class="arch-sub-module">📏 Levenshtein</span>
+                            <span class="arch-sub-module">📊 Min-Heap</span>
+                            <span class="arch-sub-module">🧠 ML Engine</span>
+                            <span class="arch-sub-module">🗃️ SQLAlchemy ORM</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Connector -->
+                <div class="arch-connector">
+                    <div class="arch-connector-line"></div>
+                    <span class="arch-connector-label">SQL / ORM</span>
+                    <div class="arch-connector-arrow">▼</div>
+                </div>
+
+                <!-- Database Layer -->
+                <div class="arch-layer">
+                    <div class="arch-box arch-db">
+                        <div class="arch-box-title">🗄️ MySQL 8.0 Database</div>
+                        <div class="arch-box-sub">8 Relational Tables · SQLite for Dev</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="section" id="features">
+    <div class="container">
+        <div style="text-align:center;" class="reveal">
+            <span class="section-label">⚙ Core Capabilities</span>
+            <h2 class="section-title">Features & Highlights</h2>
+            <p class="section-subtitle" style="margin:0 auto;">From advanced algorithms to production-grade infrastructure.</p>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-card reveal reveal-delay-1">
+                <span class="feature-icon">🔤</span>
+                <h3>Trie Prefix Search</h3>
+                <p>O(L) time complexity prefix-based medicine name search with auto-complete and instant suggestions.</p>
+                <span class="feature-tag tag-dsa">DSA</span>
+            </div>
+            <div class="feature-card reveal reveal-delay-2">
+                <span class="feature-icon">📏</span>
+                <h3>Levenshtein Fuzzy Match</h3>
+                <p>O(m×n) dynamic programming for typo-tolerant medicine search, catching misspellings and variants.</p>
+                <span class="feature-tag tag-dsa">DSA</span>
+            </div>
+            <div class="feature-card reveal reveal-delay-3">
+                <span class="feature-icon">📍</span>
+                <h3>Min-Heap + Haversine</h3>
+                <p>O(N log K) proximity ranking using Haversine formula for GPS-based nearest pharmacy discovery.</p>
+                <span class="feature-tag tag-dsa">DSA</span>
+            </div>
+            <div class="feature-card reveal reveal-delay-1">
+                <span class="feature-icon">🧠</span>
+                <h3>ML Demand Forecasting</h3>
+                <p>HistGradientBoostingRegressor for 7-day rolling demand prediction with automated replenishment recommendations.</p>
+                <span class="feature-tag tag-ml">Machine Learning</span>
+            </div>
+            <div class="feature-card reveal reveal-delay-2">
+                <span class="feature-icon">⚠️</span>
+                <h3>Risk Classification</h3>
+                <p>Real-time stock-out risk scoring (HIGH / MEDIUM / LOW) enabling proactive supply chain management.</p>
+                <span class="feature-tag tag-ml">Machine Learning</span>
+            </div>
+            <div class="feature-card reveal reveal-delay-3">
+                <span class="feature-icon">🔗</span>
+                <h3>20+ REST API Endpoints</h3>
+                <p>Comprehensive FastAPI backend with Swagger UI documentation, Pydantic v2 validation, and JWT authentication.</p>
+                <span class="feature-tag tag-api">API</span>
+            </div>
+            <div class="feature-card reveal reveal-delay-1">
+                <span class="feature-icon">📱</span>
+                <h3>Android Native App</h3>
+                <p>Kotlin + Jetpack Compose (Material 3) with MVVM architecture, Retrofit 2, and Coroutines for real-time search.</p>
+                <span class="feature-tag tag-ui">Mobile</span>
+            </div>
+            <div class="feature-card reveal reveal-delay-2">
+                <span class="feature-icon">🖥️</span>
+                <h3>12+ React Pages</h3>
+                <p>Dashboard, Analytics, Intelligence, Risk Watchlist, Inventory, Pharmacy Discovery, Profile, and more.</p>
+                <span class="feature-tag tag-ui">Frontend</span>
+            </div>
+            <div class="feature-card reveal reveal-delay-3">
+                <span class="feature-icon">🐳</span>
+                <h3>Docker Containerized</h3>
+                <p>Full Docker + Docker Compose setup for one-command deployment with MySQL, backend, and frontend services.</p>
+                <span class="feature-tag tag-devops">DevOps</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Tech Stack Section -->
+<section class="section" id="techstack">
+    <div class="container">
+        <div style="text-align:center;" class="reveal">
+            <span class="section-label">🛠 Technology</span>
+            <h2 class="section-title">Tech Stack</h2>
+            <p class="section-subtitle" style="margin:0 auto;">Built with modern, battle-tested technologies across every layer.</p>
+        </div>
+
+        <div class="tech-categories reveal reveal-delay-2">
+            <div class="tech-category">
+                <div class="tech-category-label">Backend</div>
+                <div class="tech-pills">
+                    <span class="tech-pill"><span class="tech-dot dot-python"></span>Python 3.11</span>
+                    <span class="tech-pill"><span class="tech-dot dot-fastapi"></span>FastAPI</span>
+                    <span class="tech-pill"><span class="tech-dot dot-uvicorn"></span>Uvicorn</span>
+                    <span class="tech-pill"><span class="tech-dot dot-sqlalchemy"></span>SQLAlchemy ORM</span>
+                    <span class="tech-pill"><span class="tech-dot dot-pydantic"></span>Pydantic v2</span>
+                </div>
+            </div>
+            <div class="tech-category">
+                <div class="tech-category-label">Database</div>
+                <div class="tech-pills">
+                    <span class="tech-pill"><span class="tech-dot dot-mysql"></span>MySQL 8.0</span>
+                    <span class="tech-pill"><span class="tech-dot dot-sqlite"></span>SQLite</span>
+                </div>
+            </div>
+            <div class="tech-category">
+                <div class="tech-category-label">ML / Data</div>
+                <div class="tech-pills">
+                    <span class="tech-pill"><span class="tech-dot dot-sklearn"></span>scikit-learn</span>
+                    <span class="tech-pill"><span class="tech-dot dot-pandas"></span>pandas</span>
+                    <span class="tech-pill"><span class="tech-dot dot-numpy"></span>NumPy</span>
+                    <span class="tech-pill"><span class="tech-dot dot-sklearn"></span>joblib</span>
+                </div>
+            </div>
+            <div class="tech-category">
+                <div class="tech-category-label">Frontend</div>
+                <div class="tech-pills">
+                    <span class="tech-pill"><span class="tech-dot dot-react"></span>React 19</span>
+                    <span class="tech-pill"><span class="tech-dot dot-vite"></span>Vite</span>
+                    <span class="tech-pill"><span class="tech-dot dot-tailwind"></span>Tailwind CSS</span>
+                    <span class="tech-pill"><span class="tech-dot dot-recharts"></span>Recharts</span>
+                    <span class="tech-pill"><span class="tech-dot dot-react"></span>React Router v7</span>
+                </div>
+            </div>
+            <div class="tech-category">
+                <div class="tech-category-label">Android</div>
+                <div class="tech-pills">
+                    <span class="tech-pill"><span class="tech-dot dot-kotlin"></span>Kotlin</span>
+                    <span class="tech-pill"><span class="tech-dot dot-compose"></span>Jetpack Compose</span>
+                    <span class="tech-pill"><span class="tech-dot dot-compose"></span>Material 3</span>
+                    <span class="tech-pill"><span class="tech-dot dot-retrofit"></span>Retrofit 2</span>
+                    <span class="tech-pill"><span class="tech-dot dot-kotlin"></span>Coroutines</span>
+                </div>
+            </div>
+            <div class="tech-category">
+                <div class="tech-category-label">DevOps & Auth</div>
+                <div class="tech-pills">
+                    <span class="tech-pill"><span class="tech-dot dot-docker"></span>Docker</span>
+                    <span class="tech-pill"><span class="tech-dot dot-docker"></span>Docker Compose</span>
+                    <span class="tech-pill"><span class="tech-dot dot-jwt"></span>JWT Auth</span>
+                    <span class="tech-pill"><span class="tech-dot dot-jwt"></span>RBAC (3-tier)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="section" id="stats">
+    <div class="container">
+        <div style="text-align:center;" class="reveal">
+            <span class="section-label">📊 By the Numbers</span>
+            <h2 class="section-title">Project Metrics</h2>
+            <p class="section-subtitle" style="margin:0 auto;">A comprehensive platform measured in impact.</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card reveal reveal-delay-1">
+                <div class="stat-number"><span class="counter" data-target="20">0</span><span class="stat-suffix">+</span></div>
+                <div class="stat-label">REST API Endpoints</div>
+            </div>
+            <div class="stat-card reveal reveal-delay-2">
+                <div class="stat-number"><span class="counter" data-target="8">0</span></div>
+                <div class="stat-label">Database Tables</div>
+            </div>
+            <div class="stat-card reveal reveal-delay-3">
+                <div class="stat-number"><span class="counter" data-target="12">0</span><span class="stat-suffix">+</span></div>
+                <div class="stat-label">React Pages</div>
+            </div>
+            <div class="stat-card reveal reveal-delay-4">
+                <div class="stat-number"><span class="counter" data-target="3">0</span></div>
+                <div class="stat-label">DSA Algorithms</div>
+            </div>
+            <div class="stat-card reveal reveal-delay-5">
+                <div class="stat-number"><span class="counter" data-target="6">0</span></div>
+                <div class="stat-label">Test Modules</div>
+            </div>
+            <div class="stat-card reveal reveal-delay-6">
+                <div class="stat-number"><span class="counter" data-target="3">0</span></div>
+                <div class="stat-label">User Roles</div>
+            </div>
+            <div class="stat-card reveal reveal-delay-1">
+                <div class="stat-number"><span class="counter" data-target="7">0</span></div>
+                <div class="stat-label">Day ML Forecast</div>
+            </div>
+            <div class="stat-card reveal reveal-delay-2">
+                <div class="stat-number"><span class="counter" data-target="2">0</span></div>
+                <div class="stat-label">Native Clients</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Screenshots Section -->
+<section class="section" id="screenshots">
+    <div class="container">
+        <div style="text-align:center;" class="reveal">
+            <span class="section-label">🖼 Gallery</span>
+            <h2 class="section-title">Screenshots</h2>
+            <p class="section-subtitle" style="margin:0 auto;">Platform previews — add your screenshots here.</p>
+        </div>
+
+        <div class="screenshots-grid">
+            <div class="screenshot-card reveal reveal-delay-1">
+                <div class="shimmer"></div>
+                <span class="placeholder-icon">📊</span>
+                <span class="placeholder-text">Dashboard View</span>
+                <span class="placeholder-sub">Replace with screenshot</span>
+            </div>
+            <div class="screenshot-card reveal reveal-delay-2">
+                <div class="shimmer"></div>
+                <span class="placeholder-icon">💊</span>
+                <span class="placeholder-text">Medicine Search</span>
+                <span class="placeholder-sub">Replace with screenshot</span>
+            </div>
+            <div class="screenshot-card reveal reveal-delay-3">
+                <div class="shimmer"></div>
+                <span class="placeholder-icon">🏥</span>
+                <span class="placeholder-text">Pharmacy Discovery</span>
+                <span class="placeholder-sub">Replace with screenshot</span>
+            </div>
+            <div class="screenshot-card reveal reveal-delay-1">
+                <div class="shimmer"></div>
+                <span class="placeholder-icon">📈</span>
+                <span class="placeholder-text">Analytics & Intelligence</span>
+                <span class="placeholder-sub">Replace with screenshot</span>
+            </div>
+            <div class="screenshot-card reveal reveal-delay-2">
+                <div class="shimmer"></div>
+                <span class="placeholder-icon">📱</span>
+                <span class="placeholder-text">Android App</span>
+                <span class="placeholder-sub">Replace with screenshot</span>
+            </div>
+            <div class="screenshot-card reveal reveal-delay-3">
+                <div class="shimmer"></div>
+                <span class="placeholder-icon">🔗</span>
+                <span class="placeholder-text">Swagger API Docs</span>
+                <span class="placeholder-sub">Replace with screenshot</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <h3>MediTraceX</h3>
+                <p>Intelligent Medicine Availability & Pharmacy Discovery Platform. Built to solve emergency medicine stockouts with advanced DSA, ML, and real-time geospatial technology.</p>
+            </div>
+            <div class="footer-links">
+                <div class="footer-col">
+                    <h4>Platform</h4>
+                    <a href="#features">Features</a>
+                    <a href="#architecture">Architecture</a>
+                    <a href="#techstack">Tech Stack</a>
+                    <a href="#stats">Metrics</a>
+                </div>
+                <div class="footer-col">
+                    <h4>Links</h4>
+                    <a href="https://github.com/Vandana251/MediTraceX" target="_blank">GitHub Repository</a>
+                    <a href="https://github.com/Vandana251/MediTraceX#readme" target="_blank">Documentation</a>
+                    <a href="https://github.com/Vandana251/MediTraceX/issues" target="_blank">Issues</a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 MediTraceX. Built by <a href="https://github.com/Vandana251" target="_blank" style="color:var(--accent-teal);text-decoration:none;">Vandana</a></p>
+            <div class="footer-socials">
+                <a href="https://github.com/Vandana251/MediTraceX" target="_blank" title="GitHub">
+                    <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                </a>
+                <a href="https://linkedin.com" target="_blank" title="LinkedIn">
+                    <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                </a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script>
+    // ===== NAVBAR SCROLL EFFECT =====
+    const navbar = document.getElementById('navbar');
+    const scrollProgress = document.getElementById('scrollProgress');
+
+    window.addEventListener('scroll', () => {
+        // Navbar background
+        navbar.classList.toggle('scrolled', window.scrollY > 50);
+
+        // Scroll progress bar
+        const scrollTop = document.documentElement.scrollTop;
+        const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        const progress = (scrollTop / scrollHeight) * 100;
+        scrollProgress.style.width = progress + '%';
+    });
+
+    // ===== MOBILE NAV TOGGLE =====
+    const navToggle = document.getElementById('navToggle');
+    const navLinks = document.getElementById('navLinks');
+
+    navToggle.addEventListener('click', () => {
+        navLinks.classList.toggle('mobile-open');
+    });
+
+    // Close mobile nav on link click
+    navLinks.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
+            navLinks.classList.remove('mobile-open');
         });
-      }
-    </script>
+    });
 
-  </body>
+    // ===== INTERSECTION OBSERVER — REVEAL ON SCROLL =====
+    const revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('active');
+            }
+        });
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+    document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+    // ===== ANIMATED COUNTERS =====
+    const counterObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const counter = entry.target;
+                const target = parseInt(counter.getAttribute('data-target'));
+                const duration = 1500;
+                const start = performance.now();
+
+                const animate = (now) => {
+                    const elapsed = now - start;
+                    const progress = Math.min(elapsed / duration, 1);
+                    // Ease out cubic
+                    const ease = 1 - Math.pow(1 - progress, 3);
+                    counter.textContent = Math.round(target * ease);
+
+                    if (progress < 1) {
+                        requestAnimationFrame(animate);
+                    } else {
+                        counter.textContent = target;
+                    }
+                };
+                requestAnimationFrame(animate);
+                counterObserver.unobserve(counter);
+            }
+        });
+    }, { threshold: 0.5 });
+
+    document.querySelectorAll('.counter').forEach(el => counterObserver.observe(el));
+
+    // ===== SMOOTH SCROLL FOR ANCHOR LINKS =====
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', (e) => {
+            e.preventDefault();
+            const target = document.querySelector(anchor.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    });
+</script>
+
+</body>
 </html>

@@ -3,16 +3,77 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#0d9488" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="MediTraceX" />
     <meta name="description" content="MediTraceX — Find. Verify. Reach. Intelligent medicine availability and pharmacy discovery." />
+    <link rel="manifest" href="./manifest.json" />
+    <link rel="apple-touch-icon" href="./favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <title>MediTraceX · Find. Verify. Reach.</title>
-    <script type="module" crossorigin src="./assets/index-DYIkZAwx.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-BKXZPGEZ.css">
+    <script type="module" crossorigin src="./assets/index-Ba8jAIkb.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-CchqS51U.css">
   </head>
   <body>
     <div id="root"></div>
+
+    <!-- PWA Install Prompt for Mobile -->
+    <div id="pwa-install-banner" style="display: none; position: fixed; bottom: 20px; left: 16px; right: 16px; max-width: 440px; margin: 0 auto; background: linear-gradient(135deg, #0f172a, #1e293b); border: 1px solid rgba(45, 212, 191, 0.4); box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 20px rgba(45, 212, 191, 0.2); border-radius: 16px; padding: 16px 20px; z-index: 99999; align-items: center; justify-content: space-between; gap: 12px; color: #f8fafc; font-family: 'Inter', sans-serif;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="width: 40px; height: 40px; background: rgba(45, 212, 191, 0.15); border: 1px solid rgba(45, 212, 191, 0.3); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">💊</div>
+        <div>
+          <div style="font-weight: 700; font-size: 0.95rem;">Install MediTraceX App</div>
+          <div style="font-size: 0.78rem; color: #94a3b8;">Use as full app on your phone</div>
+        </div>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <button id="pwa-install-btn" style="background: linear-gradient(135deg, #0d9488, #0284c7); color: white; border: none; padding: 8px 16px; border-radius: 100px; font-weight: 600; font-size: 0.85rem; cursor: pointer;">Install</button>
+        <button id="pwa-close-btn" style="background: transparent; color: #94a3b8; border: none; font-size: 1.1rem; cursor: pointer; padding: 4px 8px;">✕</button>
+      </div>
+    </div>
+
+    <script>
+      // Register Service Worker
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js').catch(() => {});
+        });
+      }
+
+      // Handle Install Prompt
+      let deferredPrompt = null;
+      const banner = document.getElementById('pwa-install-banner');
+      const installBtn = document.getElementById('pwa-install-btn');
+      const closeBtn = document.getElementById('pwa-close-btn');
+
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        if (banner) banner.style.display = 'flex';
+      });
+
+      if (installBtn) {
+        installBtn.addEventListener('click', async () => {
+          if (deferredPrompt) {
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            deferredPrompt = null;
+            if (banner) banner.style.display = 'none';
+          }
+        });
+      }
+
+      if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+          if (banner) banner.style.display = 'none';
+        });
+      }
+    </script>
+
   </body>
 </html>

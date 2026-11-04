@@ -1,0 +1,19 @@
+{
+  "name": "MediTraceX — Medicine & Pharmacy Discovery",
+  "short_name": "MediTraceX",
+  "description": "Find, verify, and reach medicines with real-time DSA search and AI demand forecasting.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0a0e1a",
+  "theme_color": "#0d9488",
+  "icons": [
+    {
+      "src": "./favicon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
