@@ -1,7 +1,16 @@
 # =====================================================================
-# MediTraceX Production Docker Container
+# MediTraceX Production Docker Container (Backend + Frontend)
 # =====================================================================
 
+# --- Stage 1: Build React Frontend ---
+FROM node:20-slim AS frontend-build
+WORKDIR /frontend
+COPY frontend/package.json frontend/package-lock.json* ./
+RUN npm install
+COPY frontend/ ./
+RUN npm run build
+
+# --- Stage 2: Python Backend + Serve Built Frontend ---
 FROM python:3.11-slim
 
 # Set environment optimizations
@@ -26,6 +35,9 @@ RUN pip install --no-cache-dir --upgrade pip && \
 COPY backend/ /app/backend/
 COPY database/ /app/database/
 COPY ml_engine/ /app/ml_engine/
+
+# Copy built frontend from Stage 1
+COPY --from=frontend-build /frontend/dist /app/frontend/dist
 
 # Create non-root system user for security
 RUN useradd -m -u 1000 appuser && \

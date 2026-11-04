@@ -12,8 +12,9 @@ from contextlib import asynccontextmanager
 from typing import Dict, Any
 
 from fastapi import FastAPI, Request, status
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -111,6 +112,21 @@ def healthcheck() -> Dict[str, Any]:
         "environment": settings.ENVIRONMENT,
         "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")
     }
+
+# ── Serve React Frontend Static Build (if available) ──────────────────
+FRONTEND_BUILD_DIR = os.path.join(PROJECT_ROOT, "frontend", "dist")
+
+if os.path.isdir(FRONTEND_BUILD_DIR):
+    # Serve static assets (JS, CSS, images) from the React build
+    app.mount("/assets", StaticFiles(directory=os.path.join(FRONTEND_BUILD_DIR, "assets")), name="static-assets")
+
+    @app.get("/{full_path:path}", tags=["Frontend"], include_in_schema=False)
+    async def serve_frontend(full_path: str):
+        """Catch-all route to serve the React SPA for client-side routing."""
+        file_path = os.path.join(FRONTEND_BUILD_DIR, full_path)
+        if os.path.isfile(file_path):
+            return FileResponse(file_path)
+        return FileResponse(os.path.join(FRONTEND_BUILD_DIR, "index.html"))
 
 if __name__ == "__main__":
     import uvicorn
