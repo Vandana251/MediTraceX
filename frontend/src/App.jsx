@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { HashRouter, Route, Routes } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import { PlatformDataProvider } from './hooks/usePlatformData.jsx'
 import { AppShell } from './components/AppShell'
@@ -28,7 +28,7 @@ function AuthenticatedShell() {
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <AuthProvider>
         <Routes>
           <Route path="login" element={<LoginPage />} />
@@ -49,6 +49,6 @@ export default function App() {
           </Route>
         </Routes>
       </AuthProvider>
-    </BrowserRouter>
+    </HashRouter>
   )
 }
