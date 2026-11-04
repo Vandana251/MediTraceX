@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState } from 'react'
 import { inventoryApi, mapLimited, medicinesApi, pharmaciesApi } from '../services/api'
 
 function summarizeInventory(records) {
@@ -6,6 +6,9 @@ function summarizeInventory(records) {
   const low = records.filter((item) => String(item.stock_status).toLowerCase().includes('low'))
   const out = records.filter((item) => String(item.stock_status).toLowerCase().includes('out'))
   const units = records.reduce((sum, item) => sum + Number(item.stock_quantity || 0), 0)
+  const belowSafety = records.filter(
+    (item) => Number(item.stock_quantity || 0) <= Number(item.safety_stock_threshold || 0)
+  )
   return {
     total: records.length,
     available: available.length,
@@ -14,10 +17,13 @@ function summarizeInventory(records) {
     units,
     uniqueLowMedicines: new Set(low.map((item) => item.medicine_id)).size,
     uniqueOutMedicines: new Set(out.map((item) => item.medicine_id)).size,
+    uniqueAtRiskMedicines: new Set(belowSafety.map((item) => item.medicine_id)).size,
   }
 }
 
-export function usePlatformData() {
+const PlatformDataContext = createContext(null)
+
+export function PlatformDataProvider({ children }) {
   const [state, setState] = useState({
     loading: true,
     error: null,
@@ -43,7 +49,6 @@ export function usePlatformData() {
       }
 
       const pharmacyList = Array.isArray(pharmacies) ? pharmacies : []
-      // Sample key regional hubs across India for high-speed dashboard analytics
       const sampledPharmacies = pharmacyList.length > 25 ? pharmacyList.slice(0, 25) : pharmacyList
       const inventoryChunks = await mapLimited(
         sampledPharmacies,
@@ -79,5 +84,17 @@ export function usePlatformData() {
     load()
   }, [])
 
-  return { ...state, reload: load }
+  return (
+    <PlatformDataContext.Provider value={{ ...state, reload: load }}>
+      {children}
+    </PlatformDataContext.Provider>
+  )
+}
+
+export function usePlatformData() {
+  const context = useContext(PlatformDataContext)
+  if (!context) {
+    throw new Error('usePlatformData must be used within PlatformDataProvider')
+  }
+  return context
 }

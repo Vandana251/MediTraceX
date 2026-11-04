@@ -1,5 +1,6 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
+import { PlatformDataProvider } from './hooks/usePlatformData.jsx'
 import { AppShell } from './components/AppShell'
 
 import DashboardPage from './pages/DashboardPage'
@@ -17,12 +18,22 @@ import RegisterPage from './pages/RegisterPage'
 import ProfilePage from './pages/ProfilePage'
 import NotFoundPage from './pages/NotFoundPage'
 
+function AuthenticatedShell() {
+  return (
+    <PlatformDataProvider>
+      <AppShell />
+    </PlatformDataProvider>
+  )
+}
+
 export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
         <Routes>
-          <Route element={<AppShell />}>
+          <Route path="login" element={<LoginPage />} />
+          <Route path="register" element={<RegisterPage />} />
+          <Route element={<AuthenticatedShell />}>
             <Route index element={<DashboardPage />} />
             <Route path="medicines" element={<MedicinesPage />} />
             <Route path="medicines/:medicineId" element={<MedicineDetailPage />} />
@@ -33,8 +44,6 @@ export default function App() {
             <Route path="analytics" element={<AnalyticsPage />} />
             <Route path="requests" element={<RequestsPage />} />
             <Route path="watchlist" element={<WatchlistPage />} />
-            <Route path="login" element={<LoginPage />} />
-            <Route path="register" element={<RegisterPage />} />
             <Route path="profile" element={<ProfilePage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Route>

@@ -67,6 +67,10 @@ export function AppShell() {
 
   return (
     <div className={`app-shell ${collapsed ? 'collapsed' : ''}`}>
+      <div
+        className={`sidebar-overlay ${mobileOpen ? 'open' : ''}`}
+        onClick={() => setMobileOpen(false)}
+      />
       <aside className={`sidebar ${mobileOpen ? 'open' : ''}`}>
         <div className="brand">
           <div className="brand-mark">

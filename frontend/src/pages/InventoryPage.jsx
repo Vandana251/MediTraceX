@@ -11,8 +11,9 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
+import { Package, AlertTriangle, Ban, Layers } from 'lucide-react'
 import { usePlatformData } from '../hooks/usePlatformData'
-import { ErrorBanner, PageHeader, SkeletonGrid, StatusBadge } from '../components/ui'
+import { ErrorBanner, KpiCard, PageHeader, SkeletonGrid, StatusBadge } from '../components/ui'
 import { formatDate, formatNumber, stockTone } from '../utils/format'
 
 export default function InventoryPage() {
@@ -65,10 +66,10 @@ export default function InventoryPage() {
       <ErrorBanner error={error} onRetry={reload} />
       {loading ? <SkeletonGrid count={4} /> : (
         <div className="grid grid-4" style={{ marginBottom: 16 }}>
-          <div className="card"><h3>{formatNumber(summary.total)}</h3><p className="sub">Inventory records</p></div>
-          <div className="card"><h3>{formatNumber(summary.units)}</h3><p className="sub">Units on hand</p></div>
-          <div className="card"><h3>{formatNumber(summary.low)}</h3><p className="sub">Low stock rows</p></div>
-          <div className="card"><h3>{formatNumber(summary.out)}</h3><p className="sub">Out of stock rows</p></div>
+          <KpiCard icon={<Layers size={18} />} value={formatNumber(summary.total)} label="Inventory records" description="Rows returned from pharmacy inventory APIs." />
+          <KpiCard icon={<Package size={18} />} value={formatNumber(summary.available)} label="Available stock" description="Rows currently in stock." tone="info" />
+          <KpiCard icon={<AlertTriangle size={18} />} value={formatNumber(summary.low)} label="Low stock" description="Rows below safety stock." tone="warning" />
+          <KpiCard icon={<Ban size={18} />} value={formatNumber(summary.out)} label="Out of stock" description="Zero-quantity rows." tone="danger" />
         </div>
       )}
 

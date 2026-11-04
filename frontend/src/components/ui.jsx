@@ -1,7 +1,8 @@
 export function LogoMark({ size = 22 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 32 32" fill="none" aria-hidden="true">
-      <path d="M16 6v20M6 16h20" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" />
+      <rect x="3" y="3" width="26" height="26" rx="8" fill="currentColor" opacity="0.12" />
+      <path d="M16 8v16M8 16h16" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
     </svg>
   )
 }
@@ -22,7 +23,7 @@ export function PageHeader({ eyebrow, title, description, actions }) {
 export function KpiCard({ icon, value, label, description, tone = 'teal', trend }) {
   return (
     <div className="card kpi">
-      <div className={`kpi-icon ${tone}`}>{icon}</div>
+      {icon ? <div className={`kpi-icon ${tone}`}>{icon}</div> : null}
       <div>
         <strong>{value}</strong>
         <span>{label}</span>

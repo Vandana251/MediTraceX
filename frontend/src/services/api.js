@@ -101,7 +101,15 @@ export const healthApi = {
 
 export const authApi = {
   register: (payload) => request('/api/auth/register', { method: 'POST', body: payload }),
-  login: (payload) => request('/api/auth/login', { method: 'POST', body: payload }),
+  login: ({ email, identifier, password }) =>
+    request('/api/auth/login', {
+      method: 'POST',
+      body: {
+        password,
+        email: email || identifier,
+        identifier: identifier || email,
+      },
+    }),
   me: () => request('/api/auth/me', { auth: true }),
   forgotPassword: (payload) => request('/api/auth/forgot-password', { method: 'POST', body: payload }),
   resetPassword: (payload) => request('/api/auth/reset-password', { method: 'POST', body: payload }),

@@ -43,7 +43,11 @@ export function AuthProvider({ children }) {
 
   const login = useCallback(
     async (credentials) => {
-      const payload = await authApi.login(credentials)
+      const payload = await authApi.login({
+        email: credentials.email || credentials.identifier,
+        identifier: credentials.identifier || credentials.email,
+        password: credentials.password,
+      })
       applyAuthPayload(payload)
       const profile = await authApi.me()
       persist(payload.access_token, profile)

@@ -57,8 +57,8 @@ export default function MedicinesPage() {
 
   const suggestion = useMemo(() => {
     if (!results.length) return null
-    const fuzzy = results.find((item) => Number(item.edit_distance) > 0)
-    return fuzzy ? fuzzy.name : null
+    const fuzzy = results.find((item) => Number(item.edit_distance) > 0 || item.match_type === 'fuzzy')
+    return fuzzy ? fuzzy.generic_name || fuzzy.name : null
   }, [results])
 
   const rows = query ? results : catalog.items || []
@@ -66,9 +66,9 @@ export default function MedicinesPage() {
   return (
     <div className="page">
       <PageHeader
-        eyebrow="DSA search engine"
-        title="Medicine intelligence"
-        description="Prefix trie search across names, brands, and generic molecules, with Levenshtein recovery when the query is misspelled."
+        eyebrow="Medicine intelligence"
+        title="Search the catalog"
+        description="Prefix, brand, and generic search with Levenshtein recovery when the query is misspelled."
       />
       <div className="card" style={{ marginBottom: 16 }}>
         <MedicineSearchBar
@@ -95,51 +95,78 @@ export default function MedicinesPage() {
             />
           </div>
         </div>
-        {loading ? <p className="sub">Searching the trie index…</p> : null}
+        {loading ? <p className="sub">Searching the index…</p> : null}
         {!loading && rows.length === 0 ? (
           <EmptyState title="No medicines found" description="Try a shorter prefix or a nearby spelling." />
         ) : (
-          <div className="table-wrap">
-            <table className="data">
-              <thead>
-                <tr>
-                  <th>Medicine</th>
-                  <th>Generic</th>
-                  <th>Brand</th>
-                  <th>Dosage</th>
-                  <th>Form</th>
-                  <th>Category</th>
-                  <th>Price</th>
-                  {query ? <th>Match</th> : null}
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((item) => (
-                  <tr className="row-link" key={item.id} onClick={() => navigate(`/medicines/${item.id}`)}>
-                    <td>
-                      <strong>{item.name}</strong>
-                    </td>
-                    <td>{item.generic_name}</td>
-                    <td>{item.brand_name}</td>
-                    <td>{item.dosage}</td>
-                    <td>{item.dosage_form}</td>
-                    <td>{item.category}</td>
-                    <td>{formatInr(item.unit_price)}</td>
+          <>
+            <div className="med-cards" style={{ marginBottom: 18 }}>
+              {rows.slice(0, 8).map((item) => (
+                <article key={item.id} className="med-card" onClick={() => navigate(`/medicines/${item.id}`)}>
+                  <strong>{item.name}</strong>
+                  <p className="sub" style={{ margin: '6px 0 10px' }}>
+                    {item.generic_name} · {item.brand_name}
+                  </p>
+                  <div className="chips">
+                    <StatusBadge tone="neutral">{item.dosage} {item.dosage_form}</StatusBadge>
+                    <StatusBadge tone="info">{item.category}</StatusBadge>
                     {query ? (
-                      <td>
-                        <StatusBadge tone={item.edit_distance > 0 ? 'warning' : 'info'}>
-                          {matchLabel(item.match_type, item.edit_distance)}
-                          {item.edit_distance > 0 ? ` · d=${item.edit_distance}` : ''}
-                        </StatusBadge>
-                      </td>
+                      <StatusBadge tone={item.edit_distance > 0 ? 'fuzzy' : 'success'}>
+                        {matchLabel(item.match_type, item.edit_distance)}
+                        {item.edit_distance > 0 ? ` · d=${item.edit_distance}` : ''}
+                      </StatusBadge>
                     ) : null}
+                  </div>
+                  <p style={{ margin: '12px 0 0', fontWeight: 700 }}>{formatInr(item.unit_price)}</p>
+                </article>
+              ))}
+            </div>
+            <div className="table-wrap">
+              <table className="data">
+                <thead>
+                  <tr>
+                    <th>Medicine</th>
+                    <th>Generic</th>
+                    <th>Brand</th>
+                    <th>Dosage</th>
+                    <th>Form</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    {query ? <th>Match</th> : null}
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {rows.map((item) => (
+                    <tr className="row-link" key={`row-${item.id}`} onClick={() => navigate(`/medicines/${item.id}`)}>
+                      <td>
+                        <strong>{item.name}</strong>
+                      </td>
+                      <td>{item.generic_name}</td>
+                      <td>{item.brand_name}</td>
+                      <td>{item.dosage}</td>
+                      <td>{item.dosage_form}</td>
+                      <td>{item.category}</td>
+                      <td>{formatInr(item.unit_price)}</td>
+                      {query ? (
+                        <td>
+                          <StatusBadge tone={item.edit_distance > 0 ? 'warning' : 'info'}>
+                            {matchLabel(item.match_type, item.edit_distance)}
+                            {item.edit_distance > 0 ? ` · d=${item.edit_distance}` : ''}
+                          </StatusBadge>
+                        </td>
+                      ) : null}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
-        {!query ? <p className="sub" style={{ marginTop: 12 }}>Showing page 1 of {catalog.total || 0} catalog records.</p> : null}
+        {!query ? (
+          <p className="sub" style={{ marginTop: 12 }}>
+            Showing page 1 of {catalog.total || 0} catalog records.
+          </p>
+        ) : null}
       </div>
     </div>
   )

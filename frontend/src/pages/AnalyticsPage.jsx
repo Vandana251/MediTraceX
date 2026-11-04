@@ -15,9 +15,10 @@ import { usePlatformData } from '../hooks/usePlatformData'
 import { getStateForCity } from '../config'
 import { ErrorBanner, PageHeader } from '../components/ui'
 import { getSessionSearches } from '../utils/sessionSearch'
+import { formatNumber } from '../utils/format'
 
 export default function AnalyticsPage() {
-  const { medicines, pharmacies, inventory, summary, error, reload } = usePlatformData()
+  const { medicines, pharmacies, summary, error, reload } = usePlatformData()
 
   const stateData = useMemo(() => {
     const map = {}
@@ -28,17 +29,6 @@ export default function AnalyticsPage() {
     return Object.entries(map)
       .map(([name, count]) => ({ name, count }))
       .sort((a, b) => b.count - a.count)
-  }, [pharmacies])
-
-  const cityData = useMemo(() => {
-    const map = {}
-    pharmacies.forEach((p) => {
-      map[p.city] = (map[p.city] || 0) + 1
-    })
-    return Object.entries(map)
-      .map(([name, count]) => ({ name, count }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 10)
   }, [pharmacies])
 
   const categoryData = useMemo(() => {
@@ -68,62 +58,29 @@ export default function AnalyticsPage() {
     { name: 'Out of stock', value: summary.out, color: '#b42318' },
   ]
 
+  const alwaysOpen = pharmacies.filter((p) => p.is_24_7).length
+  const availableShare = summary.total ? Math.round((summary.available / summary.total) * 100) : 0
+
   return (
     <div className="page">
       <PageHeader
-        eyebrow="Pan-India Analytics"
-        title="National Healthcare Network Insights"
-        description="Comprehensive geographic distribution, state coverage, therapeutic category metrics, and inventory health across India."
+        eyebrow="Analytics"
+        title="Network insights"
+        description="Metrics are derived from live catalog, pharmacy, inventory, and this session’s search activity. ML scores appear on the Intelligence and Risk pages."
       />
       <ErrorBanner error={error} onRetry={reload} />
 
-      <div className="grid grid-2" style={{ marginBottom: 18 }}>
-        {/* State-wise Coverage */}
-        <div className="card">
-          <h3>State-Wise Pharmacy Distribution</h3>
-          <p className="sub">
-            Distribution across {stateData.length} Indian states & regions ({pharmacies.length} total branches).
-          </p>
-          <div style={{ height: 300 }}>
-            <ResponsiveContainer>
-              <BarChart data={stateData} layout="vertical" margin={{ left: 20 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#dce6e8" />
-                <XAxis type="number" />
-                <YAxis type="category" dataKey="name" width={130} tick={{ fontSize: 11 }} />
-                <Tooltip />
-                <Bar dataKey="count" fill="#0f5c5c" radius={[0, 6, 6, 0]} name="Pharmacies" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Top Cities Coverage */}
-        <div className="card">
-          <h3>Top 10 Cities by Pharmacy Coverage</h3>
-          <p className="sub">
-            Metropolitan hubs with highest pharmacy discovery density.
-          </p>
-          <div style={{ height: 300 }}>
-            <ResponsiveContainer>
-              <BarChart data={cityData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#dce6e8" />
-                <XAxis dataKey="name" tick={{ fontSize: 10 }} interval={0} angle={-25} height={60} />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="count" fill="#1d5f8a" radius={[6, 6, 0, 0]} name="Pharmacies" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
+      <div className="grid grid-4" style={{ marginBottom: 16 }}>
+        <div className="card"><h3>{formatNumber(medicines.length)}</h3><p className="sub">Catalog medicines loaded</p></div>
+        <div className="card"><h3>{availableShare}%</h3><p className="sub">Inventory rows in stock</p></div>
+        <div className="card"><h3>{formatNumber(alwaysOpen)}</h3><p className="sub">24/7 pharmacies</p></div>
+        <div className="card"><h3>{formatNumber(summary.uniqueAtRiskMedicines)}</h3><p className="sub">SKUs at or below safety</p></div>
       </div>
 
-      <div className="grid grid-2">
-        {/* Therapeutic Categories */}
+      <div className="grid grid-2" style={{ marginBottom: 18 }}>
         <div className="card">
-          <h3>Therapeutic Categories</h3>
-          <p className="sub">
-            {medicines.length} indexed medicines categorized by pharmacological classification.
-          </p>
+          <h3>Medicine analytics</h3>
+          <p className="sub">Category mix and session search volume.</p>
           <div style={{ height: 280 }}>
             <ResponsiveContainer>
               <BarChart data={categoryData.slice(0, 8)}>
@@ -131,40 +88,64 @@ export default function AnalyticsPage() {
                 <XAxis dataKey="name" tick={{ fontSize: 10 }} interval={0} angle={-20} height={65} />
                 <YAxis />
                 <Tooltip />
-                <Bar dataKey="value" fill="#b7791f" radius={[6, 6, 0, 0]} name="Medicines" />
+                <Bar dataKey="value" fill="#0f5c5c" radius={[6, 6, 0, 0]} name="Medicines" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+          {searches.length > 0 ? (
+            <div className="chips" style={{ marginTop: 12 }}>
+              {searches.map((s) => (
+                <span key={s.name} className="status-badge">
+                  {s.name} ({s.value})
+                </span>
+              ))}
+            </div>
+          ) : (
+            <p className="sub">Most-searched terms appear here after you run catalog searches in this session.</p>
+          )}
+        </div>
+        <div className="card">
+          <h3>Pharmacy analytics</h3>
+          <p className="sub">Coverage by state from the pharmacy directory.</p>
+          <div style={{ height: 300 }}>
+            <ResponsiveContainer>
+              <BarChart data={stateData} layout="vertical" margin={{ left: 20 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#dce6e8" />
+                <XAxis type="number" />
+                <YAxis type="category" dataKey="name" width={130} tick={{ fontSize: 11 }} />
+                <Tooltip />
+                <Bar dataKey="count" fill="#1d5f8a" radius={[0, 6, 6, 0]} name="Pharmacies" />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
+      </div>
 
-        {/* Inventory Stock Health */}
+      <div className="grid grid-2">
         <div className="card">
-          <h3>Network Stock Health Ratio</h3>
-          <p className="sub">
-            Sampled inventory breakdown across available, low, and out of stock SKUs.
-          </p>
+          <h3>Inventory analytics</h3>
+          <p className="sub">Stock distribution across sampled inventory rows.</p>
           <div style={{ height: 240 }}>
             <ResponsiveContainer>
               <PieChart>
                 <Pie data={donut} dataKey="value" nameKey="name" innerRadius={60} outerRadius={88} paddingAngle={3}>
-                  {donut.map((d) => <Cell key={d.name} fill={d.color} />)}
+                  {donut.map((d) => (
+                    <Cell key={d.name} fill={d.color} />
+                  ))}
                 </Pie>
                 <Tooltip />
               </PieChart>
             </ResponsiveContainer>
           </div>
-          {searches.length > 0 && (
-            <div style={{ marginTop: 12, borderTop: '1px solid var(--line)', paddingTop: 10 }}>
-              <strong style={{ fontSize: '0.85rem' }}>Popular Searches (Session):</strong>
-              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 6 }}>
-                {searches.map((s) => (
-                  <span key={s.name} className="status-badge status-neutral" style={{ fontSize: '0.75rem' }}>
-                    {s.name} ({s.value})
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
+        </div>
+        <div className="card">
+          <h3>ML analytics</h3>
+          <p className="sub">
+            Demand and stock-out scores are pair-specific. This page does not invent network-wide model averages.
+          </p>
+          <p>
+            Use <strong>AI / ML Intelligence</strong> to forecast a pharmacy-medicine pair, and <strong>Stock-out Risk</strong> to score the lowest-stock inventory rows.
+          </p>
         </div>
       </div>
     </div>

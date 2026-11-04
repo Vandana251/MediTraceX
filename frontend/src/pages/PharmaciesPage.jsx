@@ -1,19 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { CircleMarker, MapContainer, Popup, TileLayer, useMap } from 'react-leaflet'
 import {
-  AlertCircle,
-  Building2,
-  CheckCircle2,
   Compass,
-  Filter,
   Globe,
   Info,
-  Layers,
   Loader2,
   LocateFixed,
   MapPin,
   Navigation,
-  Phone,
   Pill,
   Search,
   ShieldCheck,
@@ -451,9 +445,9 @@ export default function PharmaciesPage() {
   return (
     <div className="page">
       <PageHeader
-        eyebrow="Two-Tier Geospatial Discovery"
-        title="Ranked Proximity & Real Local Pharmacy Discovery"
-        description="Search any locality (e.g. Patamata, Labbipet, Benz Circle), pincode (e.g. 520010), city, or pharmacy name across India. Displays verified MediTraceX inventory alongside real-world local directory chemists."
+        eyebrow="Pharmacy discovery"
+        title="Ranked nearby pharmacies"
+        description="Verified partner inventory is ranked by availability, then Haversine distance via a min-heap. Local directory chemists appear for coverage, without unverified stock counts."
       />
 
       {/* Required Architecture Notice Banner */}

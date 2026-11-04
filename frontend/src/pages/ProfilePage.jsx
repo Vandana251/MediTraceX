@@ -3,19 +3,17 @@ import { Link, useNavigate } from 'react-router-dom'
 import {
   Bookmark,
   Calendar,
-  CheckCircle2,
   ClipboardList,
   LogOut,
   Mail,
   MapPin,
   Phone,
   Shield,
-  User,
 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { requestsApi, watchlistApi } from '../services/api'
 import { RequireAuth } from '../components/AppShell'
-import { ErrorBanner, PageHeader, StatusBadge } from '../components/ui'
+import { PageHeader, StatusBadge } from '../components/ui'
 import { formatDate, initials } from '../utils/format'
 
 function ProfileInner() {
@@ -23,7 +21,7 @@ function ProfileInner() {
   const { user, logout } = useAuth()
   const [requestsCount, setRequestsCount] = useState(0)
   const [watchlistCount, setWatchlistCount] = useState(0)
-  const [loading, setLoading] = useState(true)
+  const [, setLoading] = useState(true)
 
   useEffect(() => {
     let cancelled = false

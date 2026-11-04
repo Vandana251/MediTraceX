@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   CartesianGrid,
   Line,
@@ -14,7 +14,7 @@ import { ErrorBanner, PageHeader, StatusBadge } from '../components/ui'
 import { riskTone } from '../utils/format'
 
 export default function IntelligencePage() {
-  const { pharmacies, medicines, loading } = usePlatformData()
+  const { pharmacies, medicines, inventory, loading } = usePlatformData()
   const [pharmacyId, setPharmacyId] = useState('')
   const [medicineId, setMedicineId] = useState('')
   const [horizon, setHorizon] = useState(7)
@@ -22,8 +22,13 @@ export default function IntelligencePage() {
   const [error, setError] = useState(null)
   const [busy, setBusy] = useState(false)
 
+  useEffect(() => {
+    if (!pharmacyId && pharmacies[0]) setPharmacyId(String(pharmacies[0].id))
+    if (!medicineId && medicines[0]) setMedicineId(String(medicines[0].id))
+  }, [pharmacies, medicines, pharmacyId, medicineId])
+
   async function runForecast(event) {
-    event.preventDefault()
+    event?.preventDefault()
     if (!pharmacyId || !medicineId) {
       setError('Select both a pharmacy and a medicine. The model only scores a real pharmacy-medicine pair.')
       return
@@ -41,12 +46,21 @@ export default function IntelligencePage() {
     }
   }
 
+  const currentStock = inventory.find(
+    (item) => String(item.pharmacy_id) === String(pharmacyId) && String(item.medicine_id) === String(medicineId)
+  )
+
+  const chartData = (result?.daily_forecasts || []).map((row, index) => ({
+    ...row,
+    historical_stock: index === 0 ? result.current_stock : undefined,
+  }))
+
   return (
     <div className="page">
       <PageHeader
         eyebrow="AI-Powered Demand & Stock-out Intelligence"
         title="Demand forecasting"
-        description="Predictions come from GET /api/predictions/{pharmacy_id}/{medicine_id}. No synthetic ML numbers are displayed."
+        description="Values are returned by GET /api/predictions/{pharmacy_id}/{medicine_id}. No synthetic model output is shown."
       />
       <form className="card" onSubmit={runForecast} style={{ marginBottom: 16 }}>
         <div className="filter-bar">
@@ -73,6 +87,9 @@ export default function IntelligencePage() {
             <input className="input" type="number" min="1" max="14" value={horizon} onChange={(e) => setHorizon(Number(e.target.value))} />
           </div>
         </div>
+        {currentStock ? (
+          <p className="sub">Live inventory for this pair: {currentStock.stock_quantity} units · {currentStock.stock_status}</p>
+        ) : null}
         <button className="btn btn-primary" type="submit" disabled={busy}>
           {busy ? 'Running model…' : 'Generate forecast'}
         </button>
@@ -92,12 +109,13 @@ export default function IntelligencePage() {
               <p className="sub">{result.model_used}</p>
               <p>Next day: <strong>{result.predicted_next_day_demand}</strong></p>
               <p>7-day: <strong>{result.predicted_7_day_demand}</strong></p>
+              <p className="sub">Horizon: {horizon} days</p>
             </div>
             <div className="card">
               <h3>Stock-out risk</h3>
               <div className="risk-meter" style={{ marginTop: 12 }}>
                 {['LOW', 'MEDIUM', 'HIGH'].map((level) => (
-                  <span key={level} className={`${level} ${result.stock_out_risk === level ? 'active' : ''}`}>
+                  <span key={level} className={`${level} ${String(result.stock_out_risk).toUpperCase() === level ? 'active' : ''}`}>
                     {level}
                   </span>
                 ))}
@@ -114,10 +132,13 @@ export default function IntelligencePage() {
           </div>
           <div className="card">
             <h3>Demand forecast chart</h3>
-            <p className="sub">Daily predicted demand returned by the model. Historical sales series is not exposed by this endpoint.</p>
+            <p className="sub">
+              Daily predicted demand from the model. A historical sales series is not returned by this endpoint;
+              current stock is shown as the starting inventory position.
+            </p>
             <div style={{ height: 300 }}>
               <ResponsiveContainer>
-                <LineChart data={result.daily_forecasts}>
+                <LineChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#dce6e8" />
                   <XAxis dataKey="date" tick={{ fontSize: 11 }} />
                   <YAxis />

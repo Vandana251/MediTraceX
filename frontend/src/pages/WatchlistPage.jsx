@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { watchlistApi, medicinesApi, pharmaciesApi, inventoryApi } from '../services/api'
 import { useAuth } from '../context/AuthContext'
 import { RequireAuth } from '../components/AppShell'
-import { ErrorBanner, PageHeader, StatusBadge } from '../components/ui'
+import { EmptyState, ErrorBanner, PageHeader, StatusBadge } from '../components/ui'
 import { formatDateTime, stockTone } from '../utils/format'
 
 function WatchlistInner() {
@@ -145,7 +145,11 @@ function WatchlistInner() {
           )
         })}
       </div>
-      {items.length === 0 ? <div className="card"><p className="sub">No watchlist items yet.</p></div> : null}
+      {items.length === 0 ? (
+        <div className="card">
+          <EmptyState title="No watchlist items yet" description="Add a medicine to get notified when stock returns." />
+        </div>
+      ) : null}
     </div>
   )
 }

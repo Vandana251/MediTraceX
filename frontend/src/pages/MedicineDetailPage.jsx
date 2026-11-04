@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Bell, ClipboardList, MapPin, ShieldCheck } from 'lucide-react'
 import { inventoryApi, medicinesApi, pharmaciesApi, predictionsApi, requestsApi, watchlistApi } from '../services/api'
-import { DEFAULT_LOCATION, DEFAULT_RADIUS_KM, INDIAN_CITIES } from '../config'
+import { DEFAULT_LOCATION, INDIAN_CITIES } from '../config'
 import { formatInr, formatKm, formatNumber, riskTone, stockTone } from '../utils/format'
 import { ErrorBanner, PageHeader, Spinner, StatusBadge } from '../components/ui'
 import { useAuth } from '../context/AuthContext'
@@ -33,7 +33,7 @@ export default function MedicineDetailPage() {
   const [busy, setBusy] = useState('')
   const [note, setNote] = useState('')
 
-  async function loadLocationRanking(lat, lon, cityLabel) {
+  async function loadLocationRanking(lat, lon) {
     try {
       const ranked = await pharmaciesApi.nearby({
         latitude: lat,
@@ -60,7 +60,7 @@ export default function MedicineDetailPage() {
     const cityMeta = INDIAN_CITIES.find((c) => c.name === cityName)
     if (cityMeta) {
       setCoords(cityMeta)
-      loadLocationRanking(cityMeta.latitude, cityMeta.longitude, `${cityMeta.name}, ${cityMeta.state}`)
+      loadLocationRanking(cityMeta.latitude, cityMeta.longitude)
     }
   }
 
@@ -160,9 +160,9 @@ export default function MedicineDetailPage() {
   return (
     <div className="page">
       <PageHeader
-        eyebrow="Medicine Dossier"
+        eyebrow="Medicine dossier"
         title={medicine.name}
-        description={`${medicine.generic_name} · Brand: ${medicine.brand_name} · Manufacturer: ${medicine.manufacturer}`}
+        description={`${medicine.generic_name} · ${medicine.brand_name} · ${medicine.manufacturer}`}
         actions={
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             <button className="btn btn-ghost" type="button" onClick={() => navigate('/pharmacies')}>
@@ -178,13 +178,12 @@ export default function MedicineDetailPage() {
         }
       />
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 16 }}>
-        <span className="status-badge status-neutral" style={{ background: 'var(--teal-soft)', color: 'var(--teal-deep)', border: '1px solid var(--line-strong)' }}>
-          <ShieldCheck size={14} style={{ display: 'inline', marginRight: 4 }} /> Pan-India Inventory Verified
+      <div className="capability-row">
+        <span className="capability">
+          <ShieldCheck size={12} /> Live inventory
         </span>
-        <span style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>
-          Track availability across 125+ branches in Andhra Pradesh, Telangana, Karnataka, Maharashtra, Delhi NCR, and nationwide.
-        </span>
+        <span className="capability">Haversine + min-heap ranking</span>
+        <span className="capability">Demand forecast for nearest in-stock hub</span>
       </div>
 
       <ErrorBanner error={error} />

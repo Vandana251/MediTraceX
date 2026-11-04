@@ -3,7 +3,7 @@ import { requestsApi, medicinesApi, pharmaciesApi } from '../services/api'
 import { REQUEST_STATUSES } from '../config'
 import { useAuth } from '../context/AuthContext'
 import { RequireAuth } from '../components/AppShell'
-import { ErrorBanner, PageHeader, StatusBadge } from '../components/ui'
+import { EmptyState, ErrorBanner, PageHeader, StatusBadge } from '../components/ui'
 import { formatDateTime, requestStage } from '../utils/format'
 
 function Timeline({ status }) {
@@ -153,7 +153,9 @@ function RequestsInner() {
             ) : null}
           </div>
         ))}
-        {rows.length === 0 ? <p className="sub">No requests yet.</p> : null}
+        {rows.length === 0 ? (
+          <EmptyState title="No requests yet" description="Submit a request above to start the PENDING → APPROVED → FULFILLED lifecycle." />
+        ) : null}
       </div>
     </div>
   )

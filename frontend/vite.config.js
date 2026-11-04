@@ -8,20 +8,14 @@ export default defineConfig({
     host: true,
     proxy: {
       '/api': {
-        target: 'http://127.0.0.1:8000',
+        target: 'https://meditracex-backend.onrender.com',
         changeOrigin: true,
+        secure: true,
       },
       '/health': {
-        target: 'http://127.0.0.1:8000',
+        target: 'https://meditracex-backend.onrender.com',
         changeOrigin: true,
-      },
-      '/docs': {
-        target: 'http://127.0.0.1:8000',
-        changeOrigin: true,
-      },
-      '/openapi.json': {
-        target: 'http://127.0.0.1:8000',
-        changeOrigin: true,
+        secure: true,
       },
     },
   },

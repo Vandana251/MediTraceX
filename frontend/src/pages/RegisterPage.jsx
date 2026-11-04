@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Eye, EyeOff, Lock, Mail, Phone, Shield, User } from 'lucide-react'
+import { Eye, EyeOff } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { DEFAULT_LOCATION } from '../config'
-import { ErrorBanner, PageHeader } from '../components/ui'
+import { AuthLayout } from '../components/AuthLayout'
+import { ErrorBanner } from '../components/ui'
 
 export default function RegisterPage() {
   const navigate = useNavigate()
@@ -19,10 +20,9 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
-  if (isAuthenticated) {
-    navigate('/', { replace: true })
-    return null
-  }
+  useEffect(() => {
+    if (isAuthenticated) navigate('/', { replace: true })
+  }, [isAuthenticated, navigate])
 
   function updateField(key, value) {
     setForm((prev) => ({ ...prev, [key]: value }))
@@ -38,7 +38,6 @@ export default function RegisterPage() {
       setError('Password must be at least 6 characters.')
       return
     }
-
     setLoading(true)
     setError(null)
     try {
@@ -60,152 +59,54 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="page" style={{ maxWidth: 540, margin: '40px auto' }}>
-      <PageHeader
-        eyebrow="Account Registration"
-        title="Create your account"
-        description="Join the MediTraceX network to track emergency stock availability, receive restock triggers, and manage pharmacy allocations."
-      />
-
+    <AuthLayout
+      title="Create your account"
+      subtitle="Join to request medicines, watch restocks, and manage pharmacy inventory."
+    >
       <ErrorBanner error={error} />
-
-      <form className="card" onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <form className="form-stack" onSubmit={handleSubmit}>
         <div className="field">
-          <label className="label">
-            <User size={14} style={{ display: 'inline', marginRight: 6 }} />
-            Full Name
-          </label>
-          <input
-            className="input"
-            type="text"
-            placeholder="e.g. Dr. Rajesh Kumar"
-            value={form.name}
-            onChange={(e) => updateField('name', e.target.value)}
-            required
-            autoFocus
-          />
+          <label className="label">Full name</label>
+          <input className="input" value={form.name} onChange={(e) => updateField('name', e.target.value)} required autoFocus />
         </div>
-
-        <div className="grid grid-2" style={{ gap: 12 }}>
-          <div className="field">
-            <label className="label">
-              <Mail size={14} style={{ display: 'inline', marginRight: 6 }} />
-              Email Address
-            </label>
+        <div className="field">
+          <label className="label">Email</label>
+          <input className="input" type="email" value={form.email} onChange={(e) => updateField('email', e.target.value)} required />
+        </div>
+        <div className="field">
+          <label className="label">Phone</label>
+          <input className="input" type="tel" value={form.phone} onChange={(e) => updateField('phone', e.target.value)} required />
+        </div>
+        <div className="field">
+          <label className="label">Password</label>
+          <div style={{ position: 'relative' }}>
             <input
               className="input"
-              type="email"
-              placeholder="rajesh@example.com"
-              value={form.email}
-              onChange={(e) => updateField('email', e.target.value)}
+              type={showPassword ? 'text' : 'password'}
+              value={form.password}
+              onChange={(e) => updateField('password', e.target.value)}
               required
+              style={{ paddingRight: 42 }}
             />
-          </div>
-
-          <div className="field">
-            <label className="label">
-              <Phone size={14} style={{ display: 'inline', marginRight: 6 }} />
-              Phone Number
-            </label>
-            <input
-              className="input"
-              type="tel"
-              placeholder="+91-9876543210"
-              value={form.phone}
-              onChange={(e) => updateField('phone', e.target.value)}
-              required
-            />
+            <button className="icon-btn" type="button" onClick={() => setShowPassword((v) => !v)} style={{ position: 'absolute', right: 4, top: 4, width: 32, height: 32 }}>
+              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
           </div>
         </div>
-
-        <div className="grid grid-2" style={{ gap: 12 }}>
-          <div className="field">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-              <label className="label" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 6 }}>
-                <Lock size={14} />
-                Password (min. 6 chars)
-              </label>
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: 'var(--teal)',
-                  cursor: 'pointer',
-                  fontSize: '0.8rem',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 4,
-                  padding: '2px 4px',
-                  fontWeight: 600
-                }}
-              >
-                {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
-                {showPassword ? 'Hide' : 'Show'}
-              </button>
-            </div>
-            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-              <input
-                className="input"
-                type={showPassword ? 'text' : 'password'}
-                placeholder="••••••••"
-                value={form.password}
-                onChange={(e) => updateField('password', e.target.value)}
-                required
-                style={{ paddingRight: 42, width: '100%' }}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                title={showPassword ? "Hide password" : "Show password"}
-                aria-label={showPassword ? "Hide password" : "Show password"}
-                style={{
-                  position: 'absolute',
-                  right: 8,
-                  background: 'transparent',
-                  border: 'none',
-                  cursor: 'pointer',
-                  color: 'var(--muted)',
-                  padding: 6,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  borderRadius: 4
-                }}
-              >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </div>
-          </div>
-
-          <div className="field">
-            <label className="label">
-              <Shield size={14} style={{ display: 'inline', marginRight: 6 }} />
-              Account Role
-            </label>
-            <select
-              className="select"
-              value={form.role}
-              onChange={(e) => updateField('role', e.target.value)}
-            >
-              <option value="customer">Patient / Customer</option>
-              <option value="pharmacy_admin">Pharmacy Staff / Manager</option>
-            </select>
-          </div>
+        <div className="field">
+          <label className="label">Account role</label>
+          <select className="select" value={form.role} onChange={(e) => updateField('role', e.target.value)}>
+            <option value="customer">Patient / customer</option>
+            <option value="pharmacy_admin">Pharmacy staff</option>
+          </select>
         </div>
-
-        <button className="btn btn-primary" type="submit" disabled={loading} style={{ justifyContent: 'center', marginTop: 8 }}>
-          {loading ? 'Creating Account…' : 'Register Account'}
+        <button className="btn btn-primary" type="submit" disabled={loading}>
+          {loading ? 'Creating account…' : 'Create account'}
         </button>
-
-        <div style={{ textAlign: 'center', marginTop: 8, fontSize: '0.9rem', color: 'var(--ink-soft)' }}>
-          Already have an account?{' '}
-          <Link to="/login" style={{ color: 'var(--teal)', fontWeight: 600 }}>
-            Sign in here
-          </Link>
-        </div>
+        <p className="sub" style={{ textAlign: 'center' }}>
+          Already registered? <Link className="muted-link" to="/login">Sign in</Link>
+        </p>
       </form>
-    </div>
+    </AuthLayout>
   )
 }

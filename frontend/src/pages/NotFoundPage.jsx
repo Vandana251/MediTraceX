@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { AlertCircle, ArrowLeft, Home } from 'lucide-react'
+import { AlertCircle, Home } from 'lucide-react'
 import { PageHeader } from '../components/ui'
 
 export default function NotFoundPage() {
